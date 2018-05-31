@@ -108,7 +108,9 @@ public class GraphFinder {
 		return map;
 	}
 	
+	// Fix so that this algo only provides a single set of uniform Xings that are connected to the roads -- so no roads reference 2 separate Xings
 	/**
+	 * 
 	 * Returns all edges in city given a map of xings to their paved neighbors.
 	 * 
 	 * @param city

@@ -11,6 +11,8 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import com.google.common.collect.ImmutableSet;
+
 /**
  * Represents an intersection or turn-on at a single <tt>Lot</tt>.
  * <p>
@@ -35,7 +37,7 @@ public class Xing implements Drivable, OnOffPoint {
 		this.lot = lot;
 		//this.outgoingEdges = new HashSet<Road>(outgoingEdges);
 		this.turnOns = new ArrayList<>();
-		this.done = new HashSet<>();
+		this.done = new HashSet<Drive>();
 	}	
 	
 	public Lot getLot() {
@@ -79,10 +81,10 @@ public class Xing implements Drivable, OnOffPoint {
 
 			if (d.getEndVertex().equals(this)){
 				// this drive is done!
-				LOGGER.info(d + " is finished because it's reached " + this);
+				LOGGER.info(d + " is finished because it has reached " + this);
 				d.finish(time);
 				this.done.add(d);
-				LOGGER.info("finished list is of size " + this.done.size());
+				LOGGER.info(this + " has added a finished drive and now has finished drives of size " + this.done.size());
 				
 			} else {
 				Road r = d.getOutgoingRoad(this);
@@ -113,7 +115,7 @@ public class Xing implements Drivable, OnOffPoint {
 		for (Road r : map.keySet()){
 			LOGGER.info(map.get(r).size() + " car(s) attempting to turn onto " + r); 
 			Set<Drive> localRejects = r.take(map.get(r), time);
-			LOGGER.info(localRejects.size() + " car(s) cannot."); 
+			LOGGER.info(localRejects.size() + " car(s) cannot turn onto " + r); 
 			rejects.addAll(localRejects);
 		}
 
@@ -149,6 +151,6 @@ public class Xing implements Drivable, OnOffPoint {
 
 	@Override
 	public Set<Drive> getFinishedDrives() {
-		return new HashSet<Drive>(done);
+		return new HashSet<Drive>(this.done);
 	}
 }

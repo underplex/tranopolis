@@ -9,8 +9,6 @@ import java.util.Set;
 import org.junit.Test;
 
 public class TestXingFinder {
-
-	
 	
 	@Test
 	public void testNeighbors() {

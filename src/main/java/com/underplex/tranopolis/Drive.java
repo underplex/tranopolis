@@ -7,7 +7,7 @@ import java.util.Map;
 import org.jgrapht.GraphPath;
 
 /**
- * Represents a single drive/trip by a single person with a defined way to get from start to end.
+ * Represents a single Drive by a single Resident with a defined way to get from start to end.
  * <p>
  * @author Brandon Irvine, brandon@underplex.com
  */

@@ -14,10 +14,13 @@ import org.jgrapht.GraphPath;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.junit.Test;
 
-public class StraightNetworkTraffic {
+public class TestStraightTraffic {
 
 	@Test
-	public void testGraphFinder2() {
+	public void testStraightTraffic1() {
+		System.out.println("**********************");
+		System.out.println("***** testStraightTraffic1   *****");
+		System.out.println("**********************");
 		
 		// test of multi-leg trip
 		City city = new City(5, 5);
@@ -63,12 +66,12 @@ public class StraightNetworkTraffic {
 		assertNotEquals(mid, north);
 		assertNotEquals(south, mid);	
 		
-		Location northLocation = city.getLocationManager().makeLocation(Collections.singleton(north.getLot()));
+		Location northLocation = city.getLocationManager().makeLocation(Collections.singleton(city.getLot(1, 4)));
 		
-		Location southLocation = city.getLocationManager().makeLocation(Collections.singleton(south.getLot()));
+		Location southLocation = city.getLocationManager().makeLocation(Collections.singleton(city.getLot(3, 0)));
 		
-		assertTrue(city.connectLocation(northLocation, city.getLot(2, 4)));
-		assertTrue(city.connectLocation(southLocation, city.getLot(2, 0)));
+		assertTrue(city.connectLocation(northLocation, north.getLot()));
+		assertTrue(city.connectLocation(southLocation, south.getLot()));
 
 		assertEquals(1,southLocation.getOnOffPoints().size());
 		assertEquals(1,northLocation.getOnOffPoints().size());
@@ -96,24 +99,13 @@ public class StraightNetworkTraffic {
 		assertTrue(northMidRoad.availableCapacity() > 0);
 		assertTrue(midSouthRoad.availableCapacity() > 0);
 
-//		assertEquals(north, northMidRoad.getSourceXing());
-//		assertEquals(mid, northMidRoad.getTargetXing());
-//		assertEquals(mid, midSouthRoad.getSourceXing());
-//		assertEquals(south, midSouthRoad.getTargetXing());
-
-		// the xings as-vertices are not the same as the xings as-sources or targets
-
 		assertTrue(north == northMidRoad.getSourceXing());
-//		assertTrue(mid == northMidRoad.getTargetXing());
-//		assertTrue(mid == midSouthRoad.getSourceXing());
+		assertTrue(mid == northMidRoad.getTargetXing());
+		assertTrue(mid == midSouthRoad.getSourceXing());
 		assertTrue(south == midSouthRoad.getTargetXing());
-		
-//		System.out.println("Road 1: " + road1);
-//		System.out.println("Road 2: " + road2);
 				
-		Resident rez = new BasicResident(northLocation);
+		AbstractResident rez = new BasicResident(northLocation);
 				
-//		roadGraph.extensiveReport();
 		assertEquals(4, roadGraph.edgeSet().size());
 		
 		GraphPath<Xing, Road> p = DijkstraShortestPath.findPathBetween(roadGraph, north, south);
@@ -171,7 +163,7 @@ public class StraightNetworkTraffic {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			System.out.println("Time is: " + city.getTimeManager().getCurrentTime());
+//			System.out.println("Time is: " + city.getTimeManager().getCurrentTime());
 			north.flow(city.getTimeManager().getCurrentTime());
 			city.getTimeManager().advanceSeconds(60);
 		}
@@ -198,8 +190,8 @@ public class StraightNetworkTraffic {
 				e.printStackTrace();
 			}
 			for (Drive etaDrive : northMidRoad.getDrives()){
-				System.out.println("Time is: " + city.getTimeManager().getCurrentTime());
-				System.out.println(etaDrive + " has ETA of : " + northMidRoad.getEta(etaDrive));
+//				System.out.println("Time is: " + city.getTimeManager().getCurrentTime());
+//				System.out.println(etaDrive + " has ETA of : " + northMidRoad.getEta(etaDrive));
 			}
 			northMidRoad.flow(city.getTimeManager().getCurrentTime());
 			city.getTimeManager().advanceSeconds(60);
@@ -220,14 +212,14 @@ public class StraightNetworkTraffic {
 		assertEquals(0, south.getDrives().size());
 		assertTrue(!south.getDrives().containsAll(drives));
 
-		System.out.println("south is " + south.toString());
+//		System.out.println("south is " + south.toString());
 		while(!midSouthRoad.getDrives().isEmpty()){
 			midSouthRoad.flow(city.getTimeManager().getCurrentTime());
 			city.getTimeManager().advanceSeconds(60);
-			System.out.println("South finished drives size:" + south.getFinishedDrives().size());
+//			System.out.println("South finished drives size:" + south.getFinishedDrives().size());
 		}
 		
-		System.out.println("South finished drives size:" + south.getFinishedDrives().size());
+//		System.out.println("South finished drives size:" + south.getFinishedDrives().size());
 		assertEquals(1, south.getFinishedDrives().size());
 
 		assertEquals(0, north.getDrives().size());

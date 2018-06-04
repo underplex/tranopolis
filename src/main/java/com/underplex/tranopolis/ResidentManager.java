@@ -17,7 +17,7 @@ import java.util.Set;
 public class ResidentManager {
 
 	private final City city;
-	private final Set<Resident> residents;
+	private final Set<AbstractResident> residents;
 	// number of seconds in advance this manage requires to plan before the simulation actually simulates a given time
 	
 	private Set<Drive> upcomingDrives;
@@ -58,7 +58,7 @@ public class ResidentManager {
 	 * Returns Drives to start at or before <tt>time</tt>.
 	 * <p> 
 	 * May return empty Set if none are to be.
-	 * @see Resident
+	 * @see AbstractResident
 	 * @param time LocalDateTime that is the current time of the simulation
 	 * @return Set of Drives to begin immediately
 	 */

@@ -5,6 +5,14 @@ import java.util.Set;
 
 import com.google.common.collect.Sets;
 
+/**
+ * Manages and creates the Location instances for a given City instance.
+ * <p>
+ * Implements the rules and regulations for creating Locations.
+ * 
+ * @author Brandon Irvine, brandon@underplex.com
+ *
+ */
 public class LocationManager {
 
 	private static long locationCounter = 0;
@@ -20,6 +28,7 @@ public class LocationManager {
 	 * Creates and returns a <tt>Location</tt> formed by <tt>lots</tt> or returns <tt>null</tt> if not possible.
 	 * <p>
 	 * One reason this might fail is if one of the <tt>Lot</tt>s passed is already associated with an existing Location.
+	 * Another is if a lot is paved.
 	 * <p>
 	 * The Set of Lots may be changed.
 	 * <p>
@@ -31,6 +40,12 @@ public class LocationManager {
 		boolean okay = true;
 		for (Location existing : this.locations){
 			if (Sets.intersection(lots, existing.getLots()).size() != 0){
+				okay = false;
+				break;
+			}
+		}
+		for (Lot lot : lots){
+			if (lot.isPaved()){
 				okay = false;
 				break;
 			}

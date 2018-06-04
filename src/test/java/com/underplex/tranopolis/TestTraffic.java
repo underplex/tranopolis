@@ -21,11 +21,11 @@ import org.junit.Test;
 public class TestTraffic {
 
 	@Test
-	public void testGraphFinder() {
+	public void testTraffic1() {
 				
 		System.out.println();
 		System.out.println("***********************************************************");
-		System.out.println("***             testGraphFinder     ****");
+		System.out.println("***             testTraffic1     ****");
 		System.out.println("***********************************************************");
 		System.out.println();
 		
@@ -152,11 +152,11 @@ public class TestTraffic {
 
 	
 	@Test
-	public void testGraphFinder3() {
+	public void testTraffic2() {
 		
 		System.out.println();
 		System.out.println("***********************************************************");
-		System.out.println("***             testGraphFinder3      ****");
+		System.out.println("***             testTraffic2      ****");
 		System.out.println("***********************************************************");
 		System.out.println();
 		

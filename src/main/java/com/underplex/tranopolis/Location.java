@@ -9,6 +9,8 @@ import java.util.Set;
  * A Location wouldn't be, for example, on a highway, which is represented as a road network.
  * <p>
  * Conceptually, a <tt>Location</tt> is where <tt>BasicResident</tt>s can be; <tt>BasicResident</tt>s' exact place within a Location is not specified.
+ * <p>
+ * There is no guarantee that the Lots provided to the contructor are valid or a good implementation of the rules used to define a Location.
  * @author Brandon Irvine, brandon@underplex.com
  */
 public class Location {

@@ -14,10 +14,18 @@ import org.junit.Test;
 
 import com.underplex.tool.Picker;
 
-public class TestRoadFinder {
+/**
+ * JUnit tests of road finding algo.
+ * @author Brandon Irvine, brandon@underplex.com
+ */
+public class TestRoad {
 
 	@Test
-	public void testGraphFinder() {
+	public void testRoad1() {
+		System.out.println("**********************");
+		System.out.println("***** testRoad1   *****");
+		System.out.println("**********************");
+		
 		City city = new City(5, 5);
 		Set<Lot> neighbors;
 		Lot lot;
@@ -38,6 +46,8 @@ public class TestRoadFinder {
 
 		city.getLot(3, 3).makePaved();
 
+		city.getLotManager().printMap();
+		
 		Set<Lot> xings = GraphFinder.findXingNeighbors(city).keySet();
 
 		assertEquals(6, xings.size());
@@ -64,7 +74,10 @@ public class TestRoadFinder {
 	}
 
 	@Test
-	public void testPathFinder() {
+	public void testRoad2() {
+		System.out.println("**********************");
+		System.out.println("***** testRoad2   *****");
+		System.out.println("**********************");
 		City city = new City(5, 5);
 		Set<Lot> neighbors;
 		Lot lot;
@@ -96,7 +109,7 @@ public class TestRoadFinder {
 		city.getLot(2, 0).makePaved();
 		city.getLot(2, 1).makePaved();
 
-		// city.getLotManager().printMap();
+		city.getLotManager().printMap();
 
 		counter = 0;
 
@@ -145,8 +158,10 @@ public class TestRoadFinder {
 	}
 
 	@Test
-	public void testSimple() {
-
+	public void testRoad3() {
+		System.out.println("**********************");
+		System.out.println("***** testRoad3   *****");
+		System.out.println("**********************");
 		City city = new City(3, 3);
 		Set<Lot> neighbors;
 		Lot lot;
@@ -159,6 +174,8 @@ public class TestRoadFinder {
 		city.getLot(2, 0).makePaved();
 		city.getLot(2, 1).makePaved();
 		city.getLot(2, 2).makePaved();
+
+		city.getLotManager().printMap();
 
 		Map<Lot, Set<Lot>> xings = GraphFinder.findXingNeighbors(city);
 		assertEquals(4, xings.keySet().size());
@@ -200,7 +217,10 @@ public class TestRoadFinder {
 	/**
 	 * A test of a twisty road that doesn't fork.
 	 */
-	public void testTwistyRoad() {
+	public void testRoad4() {
+		System.out.println("**********************");
+		System.out.println("***** testRoad4   *****");
+		System.out.println("**********************");
 
 		City city = new City(5, 5);
 		Set<Lot> neighbors;
@@ -221,6 +241,8 @@ public class TestRoadFinder {
 
 		city.getLot(4, 1).makePaved();
 		city.getLot(4, 2).makePaved();
+
+		city.getLotManager().printMap();
 
 		Map<Lot, Set<Lot>> xings = GraphFinder.findXingNeighbors(city);
 		assertEquals(2, xings.keySet().size());
@@ -258,7 +280,10 @@ public class TestRoadFinder {
 	/**
 	 * A test of a forked road (so 3 roads).
 	 */
-	public void testForkedRoad() {
+	public void testRoad5() {
+		System.out.println("**********************");
+		System.out.println("***** testRoad5   *****");
+		System.out.println("**********************");
 
 		City city = new City(5, 5);
 		Set<Lot> neighbors;
@@ -289,6 +314,8 @@ public class TestRoadFinder {
 		city.getLot(4, 2).makePaved();
 		city.getLot(4, 3).makePaved();
 		city.getLot(4, 4).makePaved();
+
+		city.getLotManager().printMap();
 
 		Map<Lot, Set<Lot>> xings = GraphFinder.findXingNeighbors(city);
 		assertEquals(4, xings.keySet().size());
@@ -324,8 +351,10 @@ public class TestRoadFinder {
 	 * A test of a fork with 4 road attached, including two no-segment roads, as
 	 * well as a single xing unconnected to anything.
 	 */
-	public void testOffCross() {
-
+	public void testRoad6() {
+		System.out.println("**********************");
+		System.out.println("***** testRoad6   *****");
+		System.out.println("**********************");
 		City city = new City(5, 5);
 		Set<Lot> neighbors;
 		Lot lot;
@@ -344,6 +373,8 @@ public class TestRoadFinder {
 		city.getLot(1, 4).makePaved();
 
 		city.getLot(3, 3).makePaved();
+
+		city.getLotManager().printMap();
 
 		Map<Lot, Set<Lot>> xings = GraphFinder.findXingNeighbors(city);
 		// System.out.println("Xings found: ");
@@ -391,7 +422,10 @@ public class TestRoadFinder {
 	}
 
 	@Test
-	public void testOffCross2() {
+	public void testRoad7() {
+		System.out.println("**********************");
+		System.out.println("***** testRoad7   *****");
+		System.out.println("**********************");
 
 		// this version of the test incorporates entry points
 

@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableSet;
 public class Xing implements Drivable, OnOffPoint {
 
     private final static Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+    
     private final Set<Drive> done;
 	private final Lot lot;
 	//private final Set<Road> outgoingEdges;
@@ -81,7 +82,7 @@ public class Xing implements Drivable, OnOffPoint {
 
 			if (d.getEndVertex().equals(this)){
 				// this drive is done!
-				LOGGER.info(d + " is finished because it has reached " + this);
+				LOGGER.info(d + " finishes at " + time + " because it has reached " + this);
 				d.finish(time);
 				this.done.add(d);
 				LOGGER.info(this + " has added a finished drive and now has finished drives of size " + this.done.size());

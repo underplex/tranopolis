@@ -12,12 +12,10 @@ import java.util.Set;
 import org.jgrapht.GraphPath;
 
 /**
- * Basic implementation of the <tt>Resident</tt> interface.
- * <p>
- * The only Drives this Resident will plan are to and from work.
+ * Implementation of <tt>Resident</tt> interface that only plans drives from home to work and from work to home.
  * @author Brandon Irvine, brandon@underplex.com
  */
-public class BasicResident extends Resident{
+public class BasicResident extends AbstractResident implements Resident {
 
 	public BasicResident(Location home){
 		super(home);

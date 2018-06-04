@@ -13,7 +13,7 @@ import java.util.Set;
 public class TrafficManager {
 
 	private final City city;
-	private final Map<Resident, Drive> upcoming;
+	private final Map<AbstractResident, Drive> upcoming;
 	private final Comparator<Drive> sorter;
 		
 	public TrafficManager(City city) {
@@ -70,8 +70,8 @@ public class TrafficManager {
 	 * The Set may be changed without any ill effects to this TrafficManager.
 	 * @return Set of Residents with a Drive already registered
 	 */
-	public Set<Resident> getResidentsWithDrive(){
-		return new HashSet<Resident>(upcoming.keySet());
+	public Set<AbstractResident> getResidentsWithDrive(){
+		return new HashSet<AbstractResident>(upcoming.keySet());
 	}
 	
 }

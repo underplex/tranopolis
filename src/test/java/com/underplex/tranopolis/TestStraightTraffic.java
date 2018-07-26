@@ -40,7 +40,7 @@ public class TestStraightTraffic {
 
 		// start by testing the actual graph...
 		
-		RoadGraph roadGraph = GraphFinder.findRoadGraph(city);
+		DrivableGraph roadGraph = GraphFinder.findDrivableGraph(city);
 		
 		// how to add xing
 		
@@ -83,9 +83,9 @@ public class TestStraightTraffic {
 		assertTrue(!northLocation.getOnOffPoints().contains(mid));
 		
 		for (Road r : roadGraph.edgeSet()){
-			if (r.getSourceXing().equals(north) && r.getTargetXing().equals(mid)){
+			if (r.getSource().equals(north) && r.getTargetXing().equals(mid)){
 				northMidRoad = r;
-			} else if (r.getSourceXing().equals(mid) && r.getTargetXing().equals(south)){
+			} else if (r.getSource().equals(mid) && r.getTargetXing().equals(south)){
 				midSouthRoad = r;
 			}
 		}
@@ -99,9 +99,9 @@ public class TestStraightTraffic {
 		assertTrue(northMidRoad.availableCapacity() > 0);
 		assertTrue(midSouthRoad.availableCapacity() > 0);
 
-		assertTrue(north == northMidRoad.getSourceXing());
+		assertTrue(north == northMidRoad.getSource());
 		assertTrue(mid == northMidRoad.getTargetXing());
-		assertTrue(mid == midSouthRoad.getSourceXing());
+		assertTrue(mid == midSouthRoad.getSource());
 		assertTrue(south == midSouthRoad.getTargetXing());
 				
 		AbstractResident rez = new BasicResident(northLocation);
@@ -118,9 +118,9 @@ public class TestStraightTraffic {
 		
 		assertEquals(north, d.getStartVertex());
 		assertEquals(south, d.getEndVertex());
-		assertEquals(northMidRoad, d.getOutgoingRoad(north));
-		assertEquals(midSouthRoad, d.getOutgoingRoad(mid));
-		assertEquals(null, d.getOutgoingRoad(south));
+		assertEquals(northMidRoad, d.next(north));
+		assertEquals(midSouthRoad, d.next(mid));
+		assertEquals(null, d.next(south));
 		
 		Queue<Drive> drives = new ArrayDeque<>();
 		drives.add(d);

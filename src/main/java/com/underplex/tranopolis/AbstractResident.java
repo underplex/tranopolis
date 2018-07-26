@@ -29,10 +29,10 @@ public abstract class AbstractResident implements Resident {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.underplex.tranopolis.Resident#planDrives(java.time.LocalDateTime, com.underplex.tranopolis.RoadGraph, java.time.LocalDateTime, java.time.LocalDateTime)
+	 * @see com.underplex.tranopolis.Resident#planDrives(java.time.LocalDateTime, com.underplex.tranopolis.DrivableGraph, java.time.LocalDateTime, java.time.LocalDateTime)
 	 */
 	@Override
-	public abstract Set<Drive> planDrives(LocalDateTime currentTime, RoadGraph graph, LocalDateTime begin, LocalDateTime end);
+	public abstract Set<Drive> planDrives(LocalDateTime currentTime, DrivableGraph graph, LocalDateTime begin, LocalDateTime end);
 	
 	/* (non-Javadoc)
 	 * @see com.underplex.tranopolis.Resident#getHome()

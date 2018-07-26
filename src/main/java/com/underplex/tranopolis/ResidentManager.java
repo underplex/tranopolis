@@ -17,10 +17,10 @@ import java.util.Set;
 public class ResidentManager {
 
 	private final City city;
-	private final Set<AbstractResident> residents;
+	private final Set<Resident> residents;
 	// number of seconds in advance this manage requires to plan before the simulation actually simulates a given time
 	
-	private Set<Drive> upcomingDrives;
+	private final Set<Drive> upcomingDrives;
 	private LocalDateTime lastTimePlanned;
 	
 	/**
@@ -83,6 +83,14 @@ public class ResidentManager {
 			}
 		}
 		return starters;
+	}
+	
+	/**
+	 * Returns defensive copy of the Set of Residents.
+	 * @return defensive copy of the Set of Residents
+	 */
+	public Set<Resident> getResidents(){
+		return new HashSet<Resident>(this.residents);
 	}
 	
 }

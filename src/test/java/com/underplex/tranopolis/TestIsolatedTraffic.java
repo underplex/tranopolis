@@ -50,7 +50,7 @@ public class TestIsolatedTraffic {
 
 		// start by testing the actual graph...
 		
-		RoadGraph roadGraph = GraphFinder.findRoadGraph(city);
+		DrivableGraph roadGraph = GraphFinder.findDrivableGraph(city);
 		
 		// how to add xing
 		
@@ -79,7 +79,7 @@ public class TestIsolatedTraffic {
 		assertTrue(isoLocation2.getOnOffPoints().contains(iso));
 
 		for (Road r : roadGraph.edgeSet()){
-			if (r.getSourceXing().equals(iso) && r.getTargetXing().equals(iso)){
+			if (r.getSource().equals(iso) && r.getTargetXing().equals(iso)){
 				isoRoad = r;
 			}
 		}
@@ -88,7 +88,7 @@ public class TestIsolatedTraffic {
 
 		assertTrue(isoRoad.availableCapacity() > 0);
 
-		assertTrue(iso == isoRoad.getSourceXing());
+		assertTrue(iso == isoRoad.getSource());
 		assertTrue(iso == isoRoad.getTargetXing());
 						
 		Resident rez = new BasicResident(isoLocation1);

@@ -76,7 +76,7 @@ public class TestXingFinder {
 		
 		assertEquals(5, counter);
 		
-		Map<Lot, Set<Lot>> xingMap = GraphFinder.findXingNeighbors(city);
+		Map<Lot, Set<Lot>> xingMap = GraphFinder.findPavedNeighbors(city);
 		
 		assertEquals(5, xingMap.keySet().size());
 		assertEquals(true, xingMap.keySet().contains(city.getLot(1, 1)));
@@ -99,7 +99,7 @@ public class TestXingFinder {
 		
 		city.getLot(1, 1).makePaved();
 		
-		Map<Lot, Set<Lot>> xingMap = GraphFinder.findXingNeighbors(city);
+		Map<Lot, Set<Lot>> xingMap = GraphFinder.findPavedNeighbors(city);
 		
 		assertEquals(1, xingMap.keySet().size());
 		assertEquals(true, xingMap.keySet().contains(city.getLot(1, 1)));
@@ -150,7 +150,7 @@ public class TestXingFinder {
 		
 		assertEquals(18, counter);
 				
-		Map<Lot, Set<Lot>> xings = GraphFinder.findXingNeighbors(city);
+		Map<Lot, Set<Lot>> xings = GraphFinder.findPavedNeighbors(city);
 		GraphFinder.extensiveXingReport(xings);
 		assertEquals(2, xings.keySet().size());
 	}

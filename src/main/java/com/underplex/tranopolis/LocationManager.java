@@ -1,6 +1,8 @@
 package com.underplex.tranopolis;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
@@ -64,5 +66,29 @@ public class LocationManager {
 	 */
 	public Set<Location> getLocations(){
 		return new HashSet<>(this.locations);
+	}
+	
+	/**
+	 * Returns Set of all Lots used by any Locations to connect to the road network.
+	 * @return
+	 */
+	public Set<Lot> connectionLots(){
+		Set<Lot> r = new HashSet<>();
+		for (Location loc : this.locations){
+			r.addAll(loc.getConnections());
+		}
+		return r;
+	}
+	
+	/**
+	 * Returns Map with keys representing all Locations, and keys representing each Location's set of connection Lots.
+	 * @return
+	 */
+	public Map<Location, Set<Lot>> connectionMap(){
+		Map<Location, Set<Lot>> map = new HashMap<>();
+		for (Location loc : this.locations){
+			map.put(loc, loc.getConnections());
+		}
+		return map;
 	}
 }

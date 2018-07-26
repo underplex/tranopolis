@@ -12,11 +12,11 @@ public class City {
 	/**
 	 * Default date that the simulation begins.
 	 */
-	private static final LocalDateTime DEFAULT_START = LocalDateTime.of(1900, 1, 1, 0, 0);
+	public static final LocalDateTime DEFAULT_START = LocalDateTime.of(1900, 1, 1, 0, 0);
 	
 	private final LotManager lots;
 	private final LocationManager locations;
-	private final RoadGraphManager roadGraphs;
+	private final DrivableGraphManager roadGraphs;
 	private final TrafficManager traffic;
 	private final ResidentManager residents;
 	private final TimeManager timer;
@@ -29,7 +29,7 @@ public class City {
 		this.traffic = new TrafficManager(this);
 		this.residents = new ResidentManager(this);
 		this.timer = new TimeManager(this, start);
-		this.roadGraphs = new RoadGraphManager(this);
+		this.roadGraphs = new DrivableGraphManager(this);
 		this.locations = new LocationManager(this);
 		roadGraphs.updateGraph();
 	}
@@ -58,7 +58,7 @@ public class City {
 		return residents;
 	}
 
-	public RoadGraph getRoadGraph(){
+	public DrivableGraph getRoadGraph(){
 		return this.roadGraphs.getCurrentGraph();
 	}
 
@@ -74,34 +74,10 @@ public class City {
 		return timer;
 	}
 
-	/**
-	 * Connects <tt>Location</tt> to the <tt>Xing</tt> at the <tt>Lot</tt> given and updates network.
-	 * <p>
-	 * This method helps hook Location up to a network.
-	 * <p>
-	 * Has side-effect of changing the road network to include this new connection.
-	 * <p>
-	 * 
-	 * @param location Location to be connected
-	 * @param lot Lot where location can access road network
-	 * @return true iff the connection was made
-	 */
 	public boolean connectLocation(Location location, Lot lot){
-		lots.addEntryPoint(lot);
-		roadGraphs.updateGraph();
-		Xing xing = null;
-		for (Xing x : roadGraphs.getCurrentGraph().vertexSet()){
-			if (x.getLot().equals(lot)){
-				xing = x;
-				break;
-			}
-		}
-		if (xing != null){
-			location.addOnOffPoint(xing);
-		}
-		return xing != null;
-	}
-
+		return location.addConnection(lot);
+	}	
+	
 	/**
 	 * Advances city to the current number of seconds.
 	 */

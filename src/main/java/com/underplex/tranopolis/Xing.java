@@ -21,14 +21,12 @@ import com.google.common.collect.ImmutableSet;
  * @author Brandon Irvine, brandon@underplex.com
  *
  */
-public class Xing implements Drivable, OnOffPoint {
+public class Xing implements Drivable {
 
     private final static Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     
-    private final Set<Drive> done;
 	private final Lot lot;
 	//private final Set<Road> outgoingEdges;
-	private final List<Drive> turnOns;
 	
 	/**
 	 * Constructs Xing.
@@ -37,8 +35,6 @@ public class Xing implements Drivable, OnOffPoint {
 	public Xing(Lot lot) {
 		this.lot = lot;
 		//this.outgoingEdges = new HashSet<Road>(outgoingEdges);
-		this.turnOns = new ArrayList<>();
-		this.done = new HashSet<Drive>();
 	}	
 	
 	public Lot getLot() {
@@ -75,45 +71,33 @@ public class Xing implements Drivable, OnOffPoint {
 	public Set<Drive> take(Queue<Drive> drives, LocalDateTime time) {
 		if (time == null || drives == null ) throw new IllegalArgumentException("Arguments to take method cannot be null.");
 
-		Map<Road,Queue<Drive>> map = new HashMap<Road,Queue<Drive>>();
+		Map<Drivable, Queue<Drive>> map = new HashMap<Drivable, Queue<Drive>>();
 				
 		while (!drives.isEmpty()){
 			Drive d = drives.remove();
-
-			if (d.getEndVertex().equals(this)){
-				// this drive is done!
-				LOGGER.info(d + " finishes at " + time + " because it has reached " + this);
-				d.finish(time);
-				this.done.add(d);
-				LOGGER.info(this + " has added a finished drive and now has finished drives of size " + this.done.size());
-				
-			} else {
-				Road r = d.getOutgoingRoad(this);
-				if (r == null){
-					throw new IllegalArgumentException("One of the drives is not valid for this Xing.");
-				}
-				LOGGER.info(d + " attempts to turn onto " + r);
-
-				// TODO: implement fatal error-throwing for when the drive doesn't actually use this road, since that shouldn't be possible under any circumstance
-
-				// if we've already seen the road this drive wants to get onto...
-				if (map.keySet().contains(r)){ 
-					map.get(r).add(d);
-		
-				// if we haven't already seen the road this drive wants to get onto...	
-				} else { 
-					Queue<Drive> q = new ArrayDeque<Drive>();
-					q.add(d);
-					map.put(r,q); 
-				}
-
+			Drivable r = d.next(this);
+			if (r == null){
+				throw new IllegalArgumentException("One of the drives has nowhere to go from this Xing.");
 			}
+			LOGGER.info(d + " attempts to turn onto " + r);
+
+			// if we've already seen the road this drive wants to get onto...
+			if (map.keySet().contains(r)){ 
+				map.get(r).add(d);
+	
+			// if we haven't already seen the road this drive wants to get onto...	
+			} else { 
+				Queue<Drive> q = new ArrayDeque<Drive>();
+				q.add(d);
+				map.put(r,q); 
+			}
+			
 		}
 
 		Set<Drive> rejects = new HashSet<>();
 		
 		// now actually attempt to move drive off...
-		for (Road r : map.keySet()){
+		for (Drivable r : map.keySet()){
 			LOGGER.info(map.get(r).size() + " car(s) attempting to turn onto " + r); 
 			Set<Drive> localRejects = r.take(map.get(r), time);
 			LOGGER.info(localRejects.size() + " car(s) cannot turn onto " + r); 
@@ -125,33 +109,12 @@ public class Xing implements Drivable, OnOffPoint {
 
 	@Override
 	public void flow(LocalDateTime time) {
-		List<Drive> ts = new ArrayList<>(this.turnOns);
-		LOGGER.info("Turn ons includes: " + ts.toString());
-		Set<Drive> rejects = this.take(new ArrayDeque<Drive>(ts), time);
-		ts.removeAll(rejects);
-		this.turnOns.removeAll(ts);
-	}
-
-	@Override
-	public void turnOn(Queue<Drive> drives) {
-		this.turnOns.addAll(drives);		
-	}	
-
-	@Override
-	public void turnOn(Drive drive) {
-		this.turnOns.add(drive);		
-	}	
-
-	public Set<Drive> getDrives(){
-		return new HashSet<>(turnOns);
+		// xings don't do anything by themselves
 	}
 
 	public String toString(){
 		return "Xing at (" + lot.getX() + ", " + lot.getY() + ")";
 	}
-
-	@Override
-	public Set<Drive> getFinishedDrives() {
-		return new HashSet<Drive>(this.done);
-	}
+	
 }
+

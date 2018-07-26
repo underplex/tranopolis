@@ -1,8 +1,8 @@
 package com.underplex.tranopolis;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jgrapht.GraphPath;
 
@@ -13,37 +13,44 @@ import org.jgrapht.GraphPath;
  */
 public class Drive implements Comparable<Drive>{
 
-	private final GraphPath<Xing, Road> path; // primary path to be used, minus any other information
-	private final LocalDateTime startTime;
+	private final GraphPath<Drivable, Drivable> path; // primary path to be used, minus any other information
+	private final LocalDateTime startTime; // time the Drive should start, if possible; otherwise will begin as soon as possible
 	private LocalDateTime endTime;
 	private final Resident driver;
-	private final Map<Xing, Road> outgoingRoads;
-	private final Location startLocation;
-	private final Location endLocation;
+	private final List<Drivable> route;
+	private final OnOffPoint onPoint;
+	private final OnOffPoint offPoint;
 	
-	public Drive(GraphPath<Xing, Road> path, 
-			Resident driver, 
+	public Drive(GraphPath<Drivable, Drivable> path, 
+			Resident driver,
 			LocalDateTime startTime,
 			Location startLocation,
 			Location endLocation) {
 		this.path = path;
 		this.driver = driver;
 		this.startTime = startTime;
-		this.startLocation = startLocation;
-		this.endLocation = endLocation;
 		this.endTime = null;
-		this.outgoingRoads = new HashMap<>();
-		for (Road road : path.getEdgeList()){
-			outgoingRoads.put(road.getSourceXing(), road);
+		this.route = new ArrayList<>();
+		this.onPoint = startLocation;
+		this.offPoint = endLocation;
+		
+		// notice that a Drive has to have at least 1 edge...
+		
+		if (path.getEdgeList().size() < 1) throw new IllegalArgumentException("GraphPath must have at least 1 edge.");
+		
+		boolean g = true;
+		int i = 0;
+		while (g){
+			Drivable v = path.getVertexList().get(i);
+			route.add(v);
+			if (!v.equals(path.getEndVertex())){
+				route.add(path.getEdgeList().get(i));
+			} else {
+				g = false;
+			}
+			i++;
 		}
-	}
-
-	public Xing getStartVertex(){
-		return path.getStartVertex();
-	}
-	
-	public Xing getEndVertex() {
-		return path.getEndVertex();
+		
 	}
 
 	/**
@@ -63,12 +70,17 @@ public class Drive implements Comparable<Drive>{
 	}
 
 	/**
-	 * Given Xing, return the outgoing <tt>Road</tt> to be taken or null if Xing is the end of this <tt>Drive</tt>.
-	 * @param xing Xing from which we need outgoing Road
-	 * @return the outgoing <tt>Road</tt> to be taken or null if Xing is the end of this
+	 * Given Drivable, returns the next <tt>Drivable</tt> for the planned route or null if last is the end of this Drive or if last is not on this route.
+	 * @param Drivable that is last item
+	 * @return Drivable that is next item
 	 */
-	public Road getOutgoingRoad(Xing xing){
-		return this.outgoingRoads.get(xing);
+	public Drivable next(Drivable last){
+		Drivable r = null;
+		int i = this.route.indexOf(last);
+		if (i < route.size() - 1){
+			r = route.get(i + 1);
+		}
+		return r;
 	}
 	
 	public LocalDateTime getStartTime() {
@@ -76,10 +88,10 @@ public class Drive implements Comparable<Drive>{
 	}
 
 	public String toString(){
-		return "Drive: " + driver.toString() + "; " + this.getStartVertex() + ", " + this.getEndVertex() + " starting at " + this.startTime; 
+		return "Drive: " + driver.toString() + "; " + this.getGraphPath().getStartVertex() + ", " + this.getGraphPath().getEndVertex() + " starting at " + this.startTime; 
 	}
 
-	public GraphPath<Xing, Road> getGraphPath(){
+	public GraphPath<Drivable, Drivable> getGraphPath(){
 		return this.path;
 	}
 	
@@ -91,6 +103,22 @@ public class Drive implements Comparable<Drive>{
 
 	public Resident getDriver() {
 		return driver;
+	}
+	
+	public Drivable getStart(){
+		return this.route.get(0);
+	}
+	
+	public Drivable getEnd(){
+		return this.route.get(this.route.size() - 1);
+	}
+	
+	public OnOffPoint getOnPoint() {
+		return onPoint;
+	}
+
+	public OnOffPoint getOffPoint() {
+		return offPoint;
 	}
 }
 

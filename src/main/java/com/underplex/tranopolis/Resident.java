@@ -26,12 +26,12 @@ public interface Resident {
 	 * <p>
 	 * No element of the returned Set may be <tt>null</tt> and if no Drives are planned, the returned Set must be empty.
 	 * @param currentTime LocalDateTime representing current time
-	 * @param graph RoadGraph for the given period
+	 * @param graph DrivableGraph for the given period
 	 * @param beginTime LocalDateTime the time to begin
 	 * @param endTime LocalDateTime the time to end
 	 * @return Drives this AbstractResident wants to take between the times of <tt>begin</tt> and <tt>end</tt>
 	 */
-	Set<Drive> planDrives(LocalDateTime currentTime, RoadGraph graph, LocalDateTime begin, LocalDateTime end);
+	Set<Drive> planDrives(LocalDateTime currentTime, DrivableGraph graph, LocalDateTime begin, LocalDateTime end);
 
 	Location getHome();
 

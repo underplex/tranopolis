@@ -50,7 +50,7 @@ public class TestTurnTraffic {
 
 		// start by testing the actual graph...
 		
-		RoadGraph roadGraph = GraphFinder.findRoadGraph(city);
+		DrivableGraph roadGraph = GraphFinder.findDrivableGraph(city);
 		
 		// how to add xing
 		
@@ -109,11 +109,11 @@ public class TestTurnTraffic {
 		assertTrue(!northLocation.getOnOffPoints().contains(mid));
 		
 		for (Road r : roadGraph.edgeSet()){
-			if (r.getSourceXing().equals(north) && r.getTargetXing().equals(mid)){
+			if (r.getSource().equals(north) && r.getTargetXing().equals(mid)){
 				northMidRoad = r;
-			} else if (r.getSourceXing().equals(mid) && r.getTargetXing().equals(east)){
+			} else if (r.getSource().equals(mid) && r.getTargetXing().equals(east)){
 				midEastRoad = r;
-			} else if (r.getSourceXing().equals(iso) && r.getTargetXing().equals(iso)){
+			} else if (r.getSource().equals(iso) && r.getTargetXing().equals(iso)){
 				isoRoad = r;
 			}
 		}
@@ -128,11 +128,11 @@ public class TestTurnTraffic {
 		assertTrue(northMidRoad.availableCapacity() > 0);
 		assertTrue(midEastRoad.availableCapacity() > 0);
 
-		assertTrue(north == northMidRoad.getSourceXing());
+		assertTrue(north == northMidRoad.getSource());
 		assertTrue(mid == northMidRoad.getTargetXing());
-		assertTrue(mid == midEastRoad.getSourceXing());
+		assertTrue(mid == midEastRoad.getSource());
 		assertTrue(east == midEastRoad.getTargetXing());
-		assertTrue(iso == isoRoad.getSourceXing());
+		assertTrue(iso == isoRoad.getSource());
 		assertTrue(iso == isoRoad.getTargetXing());
 						
 		Resident rez = new BasicResident(northLocation);
@@ -163,13 +163,13 @@ public class TestTurnTraffic {
 		
 		assertEquals(north, drive1.getStartVertex());
 		assertEquals(east, drive1.getEndVertex());
-		assertEquals(northMidRoad, drive1.getOutgoingRoad(north));
-		assertEquals(midEastRoad, drive1.getOutgoingRoad(mid));
-		assertEquals(null, drive1.getOutgoingRoad(east));
+		assertEquals(northMidRoad, drive1.next(north));
+		assertEquals(midEastRoad, drive1.next(mid));
+		assertEquals(null, drive1.next(east));
 		
 		assertEquals(iso, drive2.getStartVertex());
 		assertEquals(iso, drive2.getEndVertex());
-		assertEquals(isoRoad, drive2.getOutgoingRoad(iso));		
+		assertEquals(isoRoad, drive2.next(iso));		
 		
 		Queue<Drive> drives = new ArrayDeque<>();
 		drives.add(drive1);

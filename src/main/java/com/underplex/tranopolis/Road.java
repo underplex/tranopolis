@@ -29,10 +29,11 @@ public class Road implements Drivable {
 	private final static int INVERSE_SCALING = 20; // scaling factor used for a very rough scaling
 	private final static long BASELINE_SECONDS = 60; // baseline per road segment 
 	private final static int PER_LOT_CAPACITY = 5;
+	private final static int DEFAULT_CAPACITY = 100;
 	private final List<Lot> segments; //ordered bunch of lots
 	private final int length;
-	private final Xing sourceXing;
-	private final Xing targetXing;
+	private final Drivable source;
+	private final Drivable target;
 	private int currentCount; 
 	private final Set<Drive> drives;
 	private final List<Eta> etas;
@@ -47,25 +48,53 @@ public class Road implements Drivable {
 	 * @param targetXing
 	 * @param segments List ordered by the lots stemming from sourceXing and leading to targetXing 
 	 */
-	public Road(Xing sourceXing, Xing targetXing, List<Lot> segments) {
-		if (sourceXing == null || targetXing == null){
+	public Road(Drivable source, Drivable target, List<Lot> segments, int totalCap) {
+		if (source == null || target == null){
 			throw new IllegalArgumentException("Source or target of Road cannot be null.");
 		}
-		this.sourceXing = sourceXing;
-		this.targetXing = targetXing;
+		this.source = source;
+		this.target = target;
 		// order the segments according to the path they take from sourceXing to targetXing
 		this.segments = new ArrayList<>(segments);
 		this.length = segments.size() + 1;
 		this.currentCount = 0;
 		this.etas = new ArrayList<Eta>();
-		this.totalCap = Math.max(PER_LOT_CAPACITY, (this.segments.size() + PER_LOT_CAPACITY) * 5);
+		this.totalCap = totalCap;
 		this.drives = new HashSet<>();
 	}
-		
-	public Road(Xing sourceXing, Xing targetXing){
-		this(sourceXing, targetXing, new ArrayList<Lot>());		
-	}
 
+	/**
+	 * Constructs a road.
+	 * <p>
+	 * While the segments used to form the road can be inferred, it's generally better to actually count the segments and order them, since certain odd or circular road types
+	 * might not lead directly from the source xing to the target xing.
+	 * @param sourceXing
+	 * @param targetXing
+	 * @param segments List ordered by the lots stemming from sourceXing and leading to targetXing 
+	 */
+	public Road(Drivable source, Drivable target, List<Lot> segments) {
+		this(source,
+				target,
+				segments,
+				Math.max(PER_LOT_CAPACITY, segments.size() + PER_LOT_CAPACITY) * 5);
+	}
+	
+	/**
+	 * Constructs a road.
+	 * <p>
+	 * While the segments used to form the road can be inferred, it's generally better to actually count the segments and order them, since certain odd or circular road types
+	 * might not lead directly from the source xing to the target xing.
+	 * @param sourceXing
+	 * @param targetXing
+	 * @param segments List ordered by the lots stemming from sourceXing and leading to targetXing 
+	 */
+	public Road(Drivable source, Drivable target) {
+		this(source,
+				target,
+				new ArrayList<Lot>(),
+				Road.DEFAULT_CAPACITY);
+	}
+	
 	/**
 	 * Returns defensive copy of the list representing all the segments/lots making up this road.
 	 * @return defensive copy of the list representing all the segments/lots making up this road 
@@ -74,12 +103,12 @@ public class Road implements Drivable {
 		return new ArrayList<>(segments);
 	}
 
-	public Xing getSourceXing() {
-		return sourceXing;
+	public Drivable getSource() {
+		return source;
 	}
 
-	public Xing getTargetXing() {
-		return targetXing;
+	public Drivable getTarget() {
+		return target;
 	}
 
 	/**
@@ -136,7 +165,7 @@ public class Road implements Drivable {
 		}
 		
 		// deal with transfers... pass them to the xing
-		Set<Drive> rejected = this.targetXing.take(new ArrayDeque<Drive>(transfer), time);
+		Set<Drive> rejected = this.target.take(new ArrayDeque<Drive>(transfer), time);
 		
 		transfer.removeAll(rejected); 
 		
@@ -173,8 +202,8 @@ public class Road implements Drivable {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((segments == null) ? 0 : segments.hashCode());
-		result = prime * result + ((sourceXing == null) ? 0 : sourceXing.hashCode());
-		result = prime * result + ((targetXing == null) ? 0 : targetXing.hashCode());
+		result = prime * result + ((source == null) ? 0 : source.hashCode());
+		result = prime * result + ((target == null) ? 0 : target.hashCode());
 		return result;
 	}
 
@@ -192,22 +221,22 @@ public class Road implements Drivable {
 				return false;
 		} else if (!segments.equals(other.segments))
 			return false;
-		if (sourceXing == null) {
-			if (other.sourceXing != null)
+		if (source == null) {
+			if (other.source != null)
 				return false;
-		} else if (!sourceXing.equals(other.sourceXing))
+		} else if (!source.equals(other.source))
 			return false;
-		if (targetXing == null) {
-			if (other.targetXing != null)
+		if (target == null) {
+			if (other.target != null)
 				return false;
-		} else if (!targetXing.equals(other.targetXing))
+		} else if (!target.equals(other.target))
 			return false;
 		return true;
 	}	
 	
 	@Override
 	public String toString(){
-		return "Road with length " + this.segments.size() + " from " + this.sourceXing + " to " + this.targetXing;
+		return "Road with length " + this.segments.size() + " from " + this.source + " to " + this.target;
 	}
 	
 	private class Eta implements Comparable<Eta>{

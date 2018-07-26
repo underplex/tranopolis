@@ -48,11 +48,11 @@ public class TestRoad {
 
 		city.getLotManager().printMap();
 		
-		Set<Lot> xings = GraphFinder.findXingNeighbors(city).keySet();
+		Set<Lot> xings = GraphFinder.findPavedNeighbors(city).keySet();
 
 		assertEquals(6, xings.size());
 
-		RoadGraph roadGraph = GraphFinder.findRoadGraph(city);
+		DrivableGraph roadGraph = GraphFinder.findDrivableGraph(city);
 		assertEquals(6, roadGraph.vertexSet().size());
 		assertEquals(9, roadGraph.edgeSet().size());
 		// xings are equal if they refer to same Lot in the City...
@@ -120,12 +120,12 @@ public class TestRoad {
 
 		assertEquals(19, counter);
 
-		Map<Lot, Set<Lot>> xings = GraphFinder.findXingNeighbors(city);
+		Map<Lot, Set<Lot>> xings = GraphFinder.findPavedNeighbors(city);
 		// GraphFinder.extensiveXingReport(xings);
 
 		assertEquals(4, xings.keySet().size());
 
-		RoadGraph roadGraph = GraphFinder.findRoadGraph(city);
+		DrivableGraph roadGraph = GraphFinder.findDrivableGraph(city);
 		assertEquals(4, roadGraph.vertexSet().size());
 		assertEquals(10, roadGraph.edgeSet().size());
 
@@ -177,7 +177,7 @@ public class TestRoad {
 
 		city.getLotManager().printMap();
 
-		Map<Lot, Set<Lot>> xings = GraphFinder.findXingNeighbors(city);
+		Map<Lot, Set<Lot>> xings = GraphFinder.findPavedNeighbors(city);
 		assertEquals(4, xings.keySet().size());
 
 		// System.out.println("Xings found: ");
@@ -197,7 +197,7 @@ public class TestRoad {
 
 		for (Road road : roads) {
 			// System.out.println(road.toString());
-			assertNotEquals(road.getSourceXing(), road.getTargetXing());
+			assertNotEquals(road.getSource(), road.getTargetXing());
 			// for (Lot rw : road.getSegments()){
 			//
 			// System.out.println(rw.toString());
@@ -244,7 +244,7 @@ public class TestRoad {
 
 		city.getLotManager().printMap();
 
-		Map<Lot, Set<Lot>> xings = GraphFinder.findXingNeighbors(city);
+		Map<Lot, Set<Lot>> xings = GraphFinder.findPavedNeighbors(city);
 		assertEquals(2, xings.keySet().size());
 
 		// System.out.println("Xings found: ");
@@ -266,7 +266,7 @@ public class TestRoad {
 
 		for (Road road : roads) {
 			// System.out.println(road.toString());
-			assertNotEquals(road.getSourceXing(), road.getTargetXing());
+			assertNotEquals(road.getSource(), road.getTargetXing());
 			// for (Lot rw : road.getSegments()){
 			//
 			// System.out.println(rw.toString());
@@ -317,7 +317,7 @@ public class TestRoad {
 
 		city.getLotManager().printMap();
 
-		Map<Lot, Set<Lot>> xings = GraphFinder.findXingNeighbors(city);
+		Map<Lot, Set<Lot>> xings = GraphFinder.findPavedNeighbors(city);
 		assertEquals(4, xings.keySet().size());
 		assertTrue(xings.keySet().contains(city.getLot(4, 4)));
 		assertTrue(xings.keySet().contains(city.getLot(0, 0)));
@@ -337,9 +337,9 @@ public class TestRoad {
 		assertEquals(6, roads.size());
 
 		for (Road r : roads) {
-			if (r.getSourceXing().equals(city.getLot(2, 2)) && r.getTargetXing().equals(city.getLot(4, 4))) {
+			if (r.getSource().equals(city.getLot(2, 2)) && r.getTargetXing().equals(city.getLot(4, 4))) {
 				assertEquals(7, r.getSegments().size());
-			} else if (r.getSourceXing().equals(city.getLot(1, 4)) && r.getTargetXing().equals(city.getLot(2, 2))) {
+			} else if (r.getSource().equals(city.getLot(1, 4)) && r.getTargetXing().equals(city.getLot(2, 2))) {
 				assertEquals(2, r.getSegments().size());
 			}
 		}
@@ -376,7 +376,7 @@ public class TestRoad {
 
 		city.getLotManager().printMap();
 
-		Map<Lot, Set<Lot>> xings = GraphFinder.findXingNeighbors(city);
+		Map<Lot, Set<Lot>> xings = GraphFinder.findPavedNeighbors(city);
 		// System.out.println("Xings found: ");
 		// for (Lot x : xings.keySet()){
 		// System.out.println(x.toString() + " has paved neighbors:");
@@ -411,11 +411,11 @@ public class TestRoad {
 										// single loop
 
 		for (Road r : roads) {
-			if (r.getSourceXing().equals(city.getLot(3, 3)) && r.getTargetXing().equals(city.getLot(3, 3))) {
+			if (r.getSource().equals(city.getLot(3, 3)) && r.getTargetXing().equals(city.getLot(3, 3))) {
 				assertEquals(0, r.getSegments().size());
-			} else if (r.getSourceXing().equals(city.getLot(0, 1)) && r.getTargetXing().equals(city.getLot(1, 1))) {
+			} else if (r.getSource().equals(city.getLot(0, 1)) && r.getTargetXing().equals(city.getLot(1, 1))) {
 				assertEquals(0, r.getSegments().size());
-			} else if (r.getSourceXing().equals(city.getLot(1, 1)) && r.getTargetXing().equals(city.getLot(1, 0))) {
+			} else if (r.getSource().equals(city.getLot(1, 1)) && r.getTargetXing().equals(city.getLot(1, 0))) {
 				assertEquals(0, r.getSegments().size());
 			}
 		}
@@ -468,7 +468,7 @@ public class TestRoad {
 		// }
 		// }
 
-		Map<Lot, Set<Lot>> xings = GraphFinder.findXingNeighbors(city);
+		Map<Lot, Set<Lot>> xings = GraphFinder.findPavedNeighbors(city);
 		assertEquals(6, xings.keySet().size());
 
 		// check the entry point -- was it made into an xing?
@@ -498,11 +498,11 @@ public class TestRoad {
 										// single loop
 
 		for (Road r : roads) {
-			if (r.getSourceXing().equals(city.getLot(3, 3)) && r.getTargetXing().equals(city.getLot(3, 3))) {
+			if (r.getSource().equals(city.getLot(3, 3)) && r.getTargetXing().equals(city.getLot(3, 3))) {
 				assertEquals(0, r.getSegments().size());
-			} else if (r.getSourceXing().equals(city.getLot(0, 1)) && r.getTargetXing().equals(city.getLot(1, 1))) {
+			} else if (r.getSource().equals(city.getLot(0, 1)) && r.getTargetXing().equals(city.getLot(1, 1))) {
 				assertEquals(0, r.getSegments().size());
-			} else if (r.getSourceXing().equals(city.getLot(1, 1)) && r.getTargetXing().equals(city.getLot(1, 0))) {
+			} else if (r.getSource().equals(city.getLot(1, 1)) && r.getTargetXing().equals(city.getLot(1, 0))) {
 				assertEquals(0, r.getSegments().size());
 			}
 		}

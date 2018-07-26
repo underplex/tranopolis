@@ -2,14 +2,11 @@ package com.underplex.tranopolis;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.jgrapht.GraphPath;
+import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 
 /**
  * Implementation of <tt>Resident</tt> interface that only plans drives from home to work and from work to home.
@@ -22,12 +19,12 @@ public class BasicResident extends AbstractResident implements Resident {
 	}
 
 	@Override
-	public Set<Drive> planDrives(LocalDateTime currentTime, RoadGraph graph, LocalDateTime begin, LocalDateTime end) {
+	public Set<Drive> planDrives(LocalDateTime currentTime, DrivableGraph graph, LocalDateTime begin, LocalDateTime end) {
 		
 		Set<Drive> set = new HashSet<>();
 
-		GraphPath<Xing,Road> toWork = null;
-		GraphPath<Xing,Road> toHome = null;
+		GraphPath<Drivable, Drivable> toWork = null;
+		GraphPath<Drivable, Drivable> toHome = null;
 		
 		LocalDateTime i = LocalDateTime.of(begin.toLocalDate(), begin.toLocalTime());
 		while (i.isBefore(end)){
@@ -60,16 +57,10 @@ public class BasicResident extends AbstractResident implements Resident {
 	 * @param terminus
 	 * @return
 	 */
-	private GraphPath<Xing, Road> findPreferred(RoadGraph graph,Location begin, Location terminus){
-		List<GraphPath<Xing, Road>> list = new ArrayList<>(PathFinder.findShortestPaths(graph, begin, terminus)); 
-		GraphPath<Xing, Road> best = Collections.max(list, new Comparator<GraphPath<Xing, Road>>() {
-				@Override
-				public int compare(GraphPath<Xing, Road> path1, GraphPath<Xing, Road> path2) {
-					Double w = path1.getWeight();
-					return -(w.compareTo(path2.getWeight()));
-				}
-			});
-		return best;
+	private GraphPath<Drivable, Drivable> findPreferred(DrivableGraph graph,Location begin, Location terminus){
+		DijkstraShortestPath<Drivable, Drivable> dsp = new DijkstraShortestPath<Drivable, Drivable>(graph);
+		return dsp.getPath(begin, terminus);
+		
 	}
 
 }

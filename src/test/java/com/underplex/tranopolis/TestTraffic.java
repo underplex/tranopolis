@@ -47,7 +47,7 @@ public class TestTraffic {
 		
 		city.getLotManager().printMap();
 		
-		RoadGraph roadGraph = GraphFinder.findRoadGraph(city);
+		DrivableGraph roadGraph = GraphFinder.findDrivableGraph(city);
 		// the whole system is built now
 		
 		Xing north = null;
@@ -70,7 +70,7 @@ public class TestTraffic {
 		}
 		
 		for (Road r : roadGraph.edgeSet()){
-			if (r.getSourceXing().equals(homeOnOff) & r.getTargetXing().equals(workOnOff)){
+			if (r.getSource().equals(homeOnOff) & r.getTargetXing().equals(workOnOff)){
 				road = r;
 			} 
 		}
@@ -94,10 +94,10 @@ public class TestTraffic {
 		
 		assertEquals(homeOnOff, d.getStartVertex());
 		assertEquals(workOnOff, d.getEndVertex());
-		assertEquals(road, d.getOutgoingRoad(homeOnOff));
-		assertEquals(null, d.getOutgoingRoad(workOnOff));
+		assertEquals(road, d.next(homeOnOff));
+		assertEquals(null, d.next(workOnOff));
 
-		assertEquals(homeOnOff, road.getSourceXing());
+		assertEquals(homeOnOff, road.getSource());
 		assertEquals(workOnOff, road.getTargetXing());
 
 		Queue<Drive> drives = new ArrayDeque<>();
@@ -200,7 +200,7 @@ public class TestTraffic {
 		
 		// start by testing the actual graph...
 		
-		RoadGraph roadGraph = GraphFinder.findRoadGraph(city);
+		DrivableGraph roadGraph = GraphFinder.findDrivableGraph(city);
 		
 		// how to add xing
 		
@@ -240,19 +240,19 @@ public class TestTraffic {
 		
 		// all the roads we care about head away from southwest up northish and eastish
 		for (Road r : roadGraph.edgeSet()){
-			if (r.getSourceXing().equals(southwest) && r.getTargetXing().equals(central)){
+			if (r.getSource().equals(southwest) && r.getTargetXing().equals(central)){
 				southcentralRoad = r;
-			} else if (r.getSourceXing().equals(southwest) && r.getTargetXing().equals(west)){
+			} else if (r.getSource().equals(southwest) && r.getTargetXing().equals(west)){
 				southwestRoad = r;
-			} else if (r.getSourceXing().equals(west) && r.getTargetXing().equals(north)){
+			} else if (r.getSource().equals(west) && r.getTargetXing().equals(north)){
 				northwestRoad = r;
-			} else if (r.getSourceXing().equals(west) && r.getTargetXing().equals(central)){
+			} else if (r.getSource().equals(west) && r.getTargetXing().equals(central)){
 				westcentralRoad = r;
-			} else if (r.getSourceXing().equals(central) && r.getTargetXing().equals(east)){
+			} else if (r.getSource().equals(central) && r.getTargetXing().equals(east)){
 				eastcentralRoad = r;
-			} else if (r.getSourceXing().equals(north) && r.getTargetXing().equals(east)){
+			} else if (r.getSource().equals(north) && r.getTargetXing().equals(east)){
 				northeastRoad = r;
-			} else if (r.getSourceXing().equals(east) && r.getTargetXing().equals(southeast)){
+			} else if (r.getSource().equals(east) && r.getTargetXing().equals(southeast)){
 				southeastRoad = r;
 			}
 		}

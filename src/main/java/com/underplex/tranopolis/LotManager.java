@@ -1,9 +1,8 @@
 package com.underplex.tranopolis;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
-
-import com.google.common.collect.Sets;
 
 /**
  * Manages the <tt>Lot</tt>s in a <tt>City</tt>.
@@ -17,13 +16,11 @@ public class LotManager {
 	private final int height;
 	private final Lot[][] lots;
 	private final Set<Lot> set;
-	private final Set<Lot> entryPoints;
 	
 	public LotManager(City city, int width, int height) {
 		this.city = city;
 		this.width = width;
 		this.height = height;
-		this.entryPoints = new HashSet<>();
 		this.lots = new Lot[width][height];
 		this.set = new HashSet<>();
 		for (int x = 0; x < width; x++){
@@ -122,24 +119,4 @@ public class LotManager {
 		}
 	}
 	
-	public void addEntryPoint(Lot lot){
-		if (!lot.isPaved()) throw new IllegalArgumentException(lot.toString() + "is not a paved lot.");
-		this.entryPoints.add(lot);
-	}
-	
-	/**
-	 * Returns defensive copy of Set for every entry point.
-	 * <p>
-	 * An entry point is a Lot where Drives may turn on the road network even though it's not an Xing.
-	 * <p>
-	 * An entry point is not necessarily a crossing of roads.
-	 * <p>
-	 * Any entry point may also be an Xing.
-	 * @return defensive copy of Set for every entry point.
-	 * 
-	 */
-	public Set<Lot> getEntryPoints(){
-		return new HashSet<>(entryPoints);
-	}
-
 }

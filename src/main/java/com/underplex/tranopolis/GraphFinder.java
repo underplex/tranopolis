@@ -19,18 +19,82 @@ public class GraphFinder {
 	private GraphFinder() {
 		// don't instantiate
 	}
+	
+	/**
+	 * Returns graph representing the networks of Drivables (paved surfaces, intersections, and starting and ending points).
+	 * <p>
+	 * For example, Roads might be the edges, while Xings and Locations might be the vertices in the returned graph.
+	 * <p>
+	 * Generally, the returned graph will treat isolated paved Lots as isolated vertices.
+	 * <p>
+	 * Any given Xing-Xing pair connected by any number of Lots between them (0 or more) will have a Road in each direct between them.
+	 * <p>
+	 * Any Xing-Location pair will have a Road in each direct between them.
+	 * <p>
+	 * Any Xing or Location connected to itself (and nothing else) in a loop of paved Lots will have a Road edge going in both directions, clockwise and counter-clockwise.
+	 * <p>
+	 * Any paved lots with a number of paved neighbors that is not 2 will be considered an Xing.
+	 * @param city
+	 * @return
+	 */
+	public static DrivableGraph findDrivableGraph(City city) {
+		Map<Lot, Set<Lot>> xings = GraphFinder.findXingLots(city);
 
+		// Map<Lot, Set<Lot>> entryPoints = GraphFinder.findEntryPointNeighbors(city);
+
+		// add entry points that may not already be xings
+		xings.putAll(GraphFinder.findEntryPointNeighbors(city));
+		
+		// convert them all into Xings with map to neighboring paved lots
+		Map<Xing, Set<Lot>> xingMap = makeXingMap(xings);
+		
+		// find all Roads between Xings (but not Locations and the network)
+		DrivableGraph graph = new DrivableGraph(city);
+
+		// first add all possible vertices...
+		// addEdge requires that vertices already be present in the graph before it's called, so we add all xings and locations as vertices
+
+		for (Drivable v : xingMap.keySet()){
+			graph.addVertex(v);
+		}
+		for (Drivable v : city.getLocationManager().getLocations()){
+			graph.addVertex(v);
+		}
+		
+		for (Road r : findRoadsWithXings(city, xingMap)) {
+			// add needed vertices before edges b/c addEdge method requires vertices to already exist
+
+			graph.addEdge(r.getSource(),r.getTarget(),r);
+		}
+		
+//		for (Drivable d : graph.vertexSet()){
+//			System.out.println("Graph has vertex at " + d.toString());
+//		}
+			
+		Map<Location, Set<Lot>> locMap = city.getLocationManager().connectionMap();
+		for (Location loc : locMap.keySet()){
+			for (Lot lot : locMap.get(loc)){
+				Xing xing = findXing(xingMap.keySet(),lot);
+				Road entrance = new Road(xing,loc);
+				Road exit = new Road(loc,xing);
+				graph.addEdge(entrance.getSource(),entrance.getTarget(),entrance);
+				graph.addEdge(exit.getSource(),exit.getTarget(),exit);
+			}
+		}
+		return graph;
+	}
+	
 	/**
 	 * Returns map where all keys are Lots where an Xing should be and values are sets of their paved
 	 * neighbors.
 	 * <p>
-	 * A lot is considered an xing if it has 1, 3, or 4 paved neighbors.
+	 * A lot is considered an xing if it has anything but 2 paved neighbors.
 	 * <p>
 	 * 
 	 * @param city
 	 * @return
 	 */
-	public static Map<Lot, Set<Lot>> findPavedNeighbors(City city) {
+	public static Map<Lot, Set<Lot>> findXingLots(City city) {
 		if (city.getHeight() < 3 | city.getWidth() < 3) {
 			throw new IllegalArgumentException("Can't find xings in cities with any dimension < 3.");
 		}
@@ -40,20 +104,12 @@ public class GraphFinder {
 			if (lot.isPaved()) {
 				Set<Lot> pn = new HashSet<>();
 				for (Lot n : city.getLotManager().getNeighbors(lot)) {
-					if (n != null & n.isPaved()) { // n is guaranteed not to be
-													// null, but double check
+					if (n == null) throw new IllegalStateException("LotManager.getNeighbors(Lot lot) seems to have returned a null Lot");
+					if (n.isPaved()) {
 						pn.add(n);
 					}
 				}
-				if (pn.size() == 0) {
-					xings.put(lot, pn);
-				} else if (pn.size() == 1) {
-					xings.put(lot, pn);
-				} else if (pn.size() == 2) {
-					// do nothing
-				} else if (pn.size() == 3) {
-					xings.put(lot, pn);
-				} else if (pn.size() == 4) {
+				if (pn.size() != 2) {
 					xings.put(lot, pn);
 				}
 			}
@@ -61,48 +117,19 @@ public class GraphFinder {
 		return xings;
 	}
 
+
+
 	/**
-	 * Returns graph representing all roads and their connections.
-	 * 
-	 * @param city
+	 * Returns Map similar to argument but where keys are all Xings representing the Lots.
+	 * @param xings
 	 * @return
 	 */
-	public static DrivableGraph findDrivableGraph(City city) {
-		Map<Lot, Set<Lot>> xings = GraphFinder.findPavedNeighbors(city);
-
-		// TODO: rewrite this so that "non-native" xings at lots that connect Locations are recognized and used
-		
-		Map<Lot, Set<Lot>> entryPoints = GraphFinder.findEntryPointNeighbors(city);
-		
-		for (Lot lot : entryPoints.keySet()){
-			if (!xings.keySet().contains(lot)){
-				xings.put(lot, entryPoints.get(lot));
-			}
-		}
-		
+	public static Map<Xing, Set<Lot>> makeXingMap(Map<Lot, Set<Lot>> xings) {
 		Map<Xing, Set<Lot>> xingMap = new HashMap<Xing, Set<Lot>>();
 		for (Lot lot : xings.keySet()){
 			xingMap.put(new Xing(lot), xings.get(lot));
 		}
-		
-		// find all edges...
-		DrivableGraph graph = new DrivableGraph(city);
-		for (Road r : findRoadsWithXings(city, xingMap)) {
-			graph.addEdge(r.getSource(),r.getTarget(),r);
-		}
-		// create roads to be entrances/exits for pairs of Location-Lot
-		Map<Location, Set<Lot>> locMap = city.getLocationManager().connectionMap();
-		for (Location loc : locMap.keySet()){
-			for (Lot lot : locMap.get(loc)){
-				Xing xing = findXing(xingMap.keySet(),lot);
-				Road entrance = new Road(xing,loc);
-				Road exit = new Road(loc,xing);
-				
-				graph.addEdge(entrance.getSource(),entrance.getTarget(),entrance);
-				graph.addEdge(exit.getSource(),exit.getTarget(),exit);
-			}			
-		}
-		return graph;
+		return xingMap;
 	}
 	
 	/**
@@ -128,67 +155,59 @@ public class GraphFinder {
 		return map;
 	}
 
-	// Fix so that this algo only provides a single set of uniform Xings that are connected to the roads -- so no roads reference 2 separate Xings
 	/**
-	 * 
-	 * Returns all edges in city given a map of xings to their paved neighbors.
-	 * 
+	 * Returns all Roads in city given a map of all Xings to their paved neighbors.
+	 * <p>
+	 * The <tt>xings</tt> map is supposed to be an exhaustive set of the Xings in the city, including Lots that Locations will use to connect to the rest of the road network.
+	 * <p>
+	 * Xings that are isolated (meaning they have no paved neighbors) don't have any Roads associated with them.
 	 * @param city
 	 * @param xings
 	 * @return
 	 */
 	public static Set<Road> findRoadsWithXings(City city, Map<Xing, Set<Lot>> xings) {
-		Set<Road> edges = new HashSet<>();
+		Set<Road> roadSet = new HashSet<>();
 		for (Xing sourceXing : xings.keySet()) {
 			Set<Lot> pavedNeighbors = xings.get(sourceXing);
 			
-			// check for special case where xing is actually just a single, isolated paved lot
-			if (pavedNeighbors.size() == 0) {
-				// create single loop edge
-				edges.add(new Road(sourceXing, sourceXing));
-
-
-			// deal with normal case, where sourceXing has multiple
-				// neighbors
-			} else { 
-				for (Lot pn : pavedNeighbors) {
-					Xing targetXing = null;
-					Lot currentLot = pn;
-					Lot lastLot = sourceXing.getLot();
-					List<Lot> segments = new ArrayList<>();
-					while (targetXing == null) {
-						Xing currentXing = findXing(xings.keySet(), currentLot);
-						if (currentXing != null) { // if you've
-																	// reached
-																	// another
-																	// xing...
-							targetXing = currentXing;
-						} else {
-							// logically, currentLot must be paved and must have
-							// exactly one other paved neighbor besides the one
-							// we already processed (or the sourceXing itself)
-							// we need to find this paved neighbor among the lots surrounding currentLot
-							segments.add(currentLot);
-							Lot temp = currentLot;
-							for (Lot n : city.getLotManager().getNeighbors(currentLot)) {
-								if (!n.equals(lastLot) && n.isPaved()) {
-									// lot we're looking for!
-									currentLot = n;
-									lastLot = temp;
-									break; // for loop shouldn't execute any
-											// more checks
-								}
-
+			// notice that isolated Xings will simply not have any paved neighbors to form a Road with
+			for (Lot pn : pavedNeighbors) {
+				Xing targetXing = null;
+				Lot currentLot = pn;
+				Lot lastLot = sourceXing.getLot();
+				List<Lot> segments = new ArrayList<>();
+				while (targetXing == null) {
+					Xing currentXing = findXing(xings.keySet(), currentLot);
+					if (currentXing != null) { // if you've
+																// reached
+																// another
+																// xing...
+						targetXing = currentXing;
+					} else {
+						// logically, currentLot must be paved but not be an Xing,
+						// which implies that it has exactly 1 paved neighbor besides from the one we already processed (or the sourceXing itself)
+						// we need to find this paved neighbor among the lots surrounding currentLot
+						segments.add(currentLot);
+						Lot temp = currentLot;
+						for (Lot n : city.getLotManager().getNeighbors(currentLot)) {
+							if (!n.equals(lastLot) && n.isPaved()) {
+								// n is lot we're looking for!
+								currentLot = n;
+								lastLot = temp;
+								break; // for loop shouldn't execute any
+										// more checks
 							}
-							// System.out.println();
+
 						}
+						// System.out.println();
 					}
-					edges.add(new Road(sourceXing, targetXing, segments));
 				}
+				roadSet.add(new Road(sourceXing, targetXing, segments));
 			}
+			
 		}
 
-		return edges;
+		return roadSet;
 	}
 
 	/**
@@ -199,6 +218,7 @@ public class GraphFinder {
 	 * @param xings
 	 * @return
 	 */
+	@Deprecated
 	public static Set<Road> findRoads(City city, Map<Lot, Set<Lot>> xings) {
 		Set<Road> edges = new HashSet<>();
 		for (Lot sourceLot : xings.keySet()) {
@@ -277,5 +297,13 @@ public class GraphFinder {
 			}
 		}
 		return null;
+	}
+	
+	public static Set<Xing> convertToXings(Collection<Lot> lots){
+		Set<Xing> xings = new HashSet<>();
+		for (Lot lot : lots){
+			xings.add(new Xing(lot));
+		}
+		return xings;
 	}
 }

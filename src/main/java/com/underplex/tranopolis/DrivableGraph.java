@@ -8,8 +8,13 @@ import org.jgrapht.graph.DirectedPseudograph;
 @SuppressWarnings("serial")
 
 /**
- * Represents the network of roads and xings as a graph.
+ * Represents the network of roads, xings, and locations as a graph.
  * <p>
+ * The primary purpose of building such a graph would probably be to be able to perform graph operations on a representation of the road network.
+ * <p>
+ * For example, Dijkstra's algorithm can be used on this to determine shortest paths given weights.
+ * <p>
+ * Instances of Location may serve as vertices, but may not be present if they aren't actually connected to any Drivable instances that can serve as edges, such as Road.
  * @author Brandon Irvine, brandon@underplex.com
  *
  */

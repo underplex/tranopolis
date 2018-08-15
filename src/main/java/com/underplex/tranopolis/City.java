@@ -88,7 +88,7 @@ public class City {
 	/**
 	 * Advance simulation by number of seconds.
 	 * <p>
-	 * Note that there's nothing preventing an invalide number of seconds from being attempted this way.
+	 * Note that there's nothing preventing an invalid number of seconds from being attempted this way.
 	 */
 	public void advance(long seconds){
 		this.timer.advanceSeconds(seconds);
@@ -96,4 +96,5 @@ public class City {
 		this.residents.advance(this.timer.getCurrentTime());
 		this.traffic.forward(this.timer.getCurrentTime(),this.residents.surveyDrives(this.timer.getCurrentTime()));
 	}
+
 }

@@ -3,6 +3,7 @@ package com.underplex.tranopolis;
 import java.time.LocalDateTime;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -30,11 +31,17 @@ public class Location implements OnOffPoint, Drivable {
 	private final City city;
 	private final Set<Lot> connections;
 	private final Set<Lot> lots;
-	private final Set<BasicResident> residents;
+	private final Set<Resident> residents;
 	private final String id;
 	private final Map<Drivable, List<Drive>> turnOns; // exits and their associated drives
     private final Set<Drive> done;
 
+    /**
+     * Generally, not the preferred way to create a Lot. Use LocationManager.makeLocation instead.
+     * @param city
+     * @param lots
+     * @param id
+     */
 	public Location(City city, Set<Lot> lots, String id){
 		this.city = city;
 		this.lots = new HashSet<>(lots);
@@ -44,22 +51,32 @@ public class Location implements OnOffPoint, Drivable {
 		this.done = new HashSet<>();
 		this.turnOns = new HashMap<Drivable, List<Drive>>();
 	}
+
+    /**
+     * Generally, not the preferred way to create a Lot. Use LocationManager.makeLocation instead.
+     * @param city
+     * @param lots
+     * @param id
+     */
+	public Location(City city, Lot lot, String id){
+		this(city, Collections.singleton(lot),id);
+	}
 	
 	/**
-	 * Adds BasicResident and returns true as if this were a Set.
+	 * Adds Resident and returns true as if this were a Set.
 	 * @param resident
 	 * @return
 	 */
-	public boolean addResident(BasicResident resident){
+	public boolean addResident(Resident resident){
 		return residents.add(resident);
 	}
 	
 	/**
-	 * Removes BasicResident and returns boolean as if this were a Set.
+	 * Removes Resident and returns boolean as if this were a Set.
 	 * @param resident
 	 * @return
 	 */
-	public boolean removeResident(BasicResident resident){
+	public boolean removeResident(Resident resident){
 		return residents.remove(resident);
 	}
 
@@ -73,13 +90,14 @@ public class Location implements OnOffPoint, Drivable {
 	}
 	
 	/**
-	 * Adds a connection to the road network at Lot, returns true iff this was successful.
+	 * Adds a connection to the road network at Lot, returns true iff this added a new lot.
+	 * <p>
+	 * This might fail if it is determined the lot can't be used reasonably for this purpose, for instance, if the Lot isn't paved.
 	 */
 	public boolean addConnection(Lot lot){
 		
 		if (lot.isPaved()){
-			this.connections.add(lot);
-			return true;
+			return this.connections.add(lot);
 		}
 		return false;
 	}
@@ -97,7 +115,7 @@ public class Location implements OnOffPoint, Drivable {
 	 * Returns defensive copy of Set of Residents currently at this Location.
 	 * @return defensive copy of Set of Residents currently at this Location
 	 */
-	public Set<BasicResident> getResidents(){
+	public Set<Resident> getResidents(){
 		return new HashSet<>(residents);
 	}
 	
@@ -208,4 +226,9 @@ public class Location implements OnOffPoint, Drivable {
 	public Set<Lot> getConnections() {
 		return connections;
 	}
+
+	public String toString(){
+		return "Location " + this.id + " with " + lots.size() + " lot(s)";
+	}
+
 }

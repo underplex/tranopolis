@@ -1,5 +1,6 @@
 package com.underplex.tranopolis;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -60,6 +61,11 @@ public class LocationManager {
 		return loc; 
 	}
 	
+	public Location makeLocation(Lot lot){
+		return this.makeLocation(Collections.singleton(lot));
+	}
+	
+	
 	/**
 	 * Returns defensive copy of the Set of all Locations.
 	 * @return defensive copy of the Set of all Locations
@@ -91,4 +97,12 @@ public class LocationManager {
 		}
 		return map;
 	}
+
+	public void extensiveReport(){
+		System.out.println("LocationManager recognizes " + locations.size() +" location(s):");
+		for (Location loc : locations){
+			System.out.println("____ " + loc.toString());
+		}
+	}
+
 }

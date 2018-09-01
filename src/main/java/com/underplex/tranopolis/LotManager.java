@@ -104,15 +104,20 @@ public class LotManager {
 	}
 	
 	/**
-	 * Prints to console basic map of paved/unpaved fields.
+	 * Prints to console basic map of the Lots in this.
 	 * <p>
 	 * 
-	 * O represents unpaved, P represents paved.
+	 * A period represents unpaved, P represents paved, and b represents built.
 	 */
 	public void printMap(){
 		for (int y = height - 1; y >= 0; y--){
 			for (int x = 0; x < width; x++){
-				char rep = (lots[x][y].isPaved()) ? 'R' : '.'; 
+				char rep = '.';
+				if (lots[x][y].isPaved()){
+					rep = 'R';
+				} else if (lots[x][y].isBuilt()){
+					rep = 'b';
+				}
 				System.out.print(rep + " ");
 			}
 			System.out.println();

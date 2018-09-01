@@ -16,23 +16,37 @@ public abstract class AbstractResident implements Resident {
 	private Location home; // where person lives
 	private Location work; // where person works
 	private Location currentLocation; // current currentLocation
+	private Drive drive; // current Drive, if any
 	
 	/**
 	 * Creates AbstractResident at home and assigns them that home.
 	 * @param home AbstractResident's home
 	 */
-	public AbstractResident(Location home){
+	public AbstractResident(Location home, Location work){
 		this.id = Long.toString(++counter);
 		this.home = home;
-		this.work = null;
+		this.work = work;
 		this.currentLocation = home;
+		this.drive = null;
 	}
+	
+	public AbstractResident(Location home){
+		this(home, null);
+	}
+	
 
 	/* (non-Javadoc)
 	 * @see com.underplex.tranopolis.Resident#planDrives(java.time.LocalDateTime, com.underplex.tranopolis.DrivableGraph, java.time.LocalDateTime, java.time.LocalDateTime)
 	 */
 	@Override
 	public abstract Set<Drive> planDrives(LocalDateTime currentTime, DrivableGraph graph, LocalDateTime begin, LocalDateTime end);
+	
+	
+	@Override
+	public void startDrive(Drive drive){
+		this.drive = drive;
+		this.currentLocation = null;
+	}
 	
 	/* (non-Javadoc)
 	 * @see com.underplex.tranopolis.Resident#getHome()
@@ -89,4 +103,14 @@ public abstract class AbstractResident implements Resident {
 	public String toString(){
 		return "Resident " + id;
 	}
+	
+	@Override
+	public boolean isAt(OnOffPoint onOffPoint){
+		if (this.getCurrentLocation() != null &&
+				this.getCurrentLocation().equals(onOffPoint)){
+			return true;
+		}
+		return false;
+	}
+
 }

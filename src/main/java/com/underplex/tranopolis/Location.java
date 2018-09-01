@@ -35,6 +35,7 @@ public class Location implements OnOffPoint, Drivable {
 	private final String id;
 	private final Map<Drivable, List<Drive>> turnOns; // exits and their associated drives
     private final Set<Drive> done;
+    private final String label;
 
     /**
      * Generally, not the preferred way to create a Lot. Use LocationManager.makeLocation instead.
@@ -42,7 +43,7 @@ public class Location implements OnOffPoint, Drivable {
      * @param lots
      * @param id
      */
-	public Location(City city, Set<Lot> lots, String id){
+	public Location(City city, Set<Lot> lots, String id, String label){
 		this.city = city;
 		this.lots = new HashSet<>(lots);
 		this.connections = new HashSet<>();
@@ -50,6 +51,17 @@ public class Location implements OnOffPoint, Drivable {
 		this.id = id;
 		this.done = new HashSet<>();
 		this.turnOns = new HashMap<Drivable, List<Drive>>();
+		this.label = label;
+	}
+	
+    /**
+     * Generally, not the preferred way to create a Lot. Use LocationManager.makeLocation instead.
+     * @param city
+     * @param lots
+     * @param id
+     */
+	public Location(City city, Set<Lot> lots, String id){
+		this(city, lots, id, "Location" + id);
 	}
 
     /**
@@ -58,8 +70,18 @@ public class Location implements OnOffPoint, Drivable {
      * @param lots
      * @param id
      */
+	public Location(City city, Lot lot, String id, String label){
+		this(city, Collections.singleton(lot), id, label);
+	}
+	
+    /**
+     * Generally, not the preferred way to create a Lot. Use LocationManager.makeLocation instead.
+     * @param city
+     * @param lots
+     * @param id
+     */
 	public Location(City city, Lot lot, String id){
-		this(city, Collections.singleton(lot),id);
+		this(city, Collections.singleton(lot), id, "Location " + id);
 	}
 	
 	/**
@@ -81,22 +103,39 @@ public class Location implements OnOffPoint, Drivable {
 	}
 
 	/**
-	 * Adds Lot and returns true as if this were a Set.
+	 * Attempts to add a Lot and returns true iff it is.
+	 * <p>
+	 * Lots can only be added if they are built.
+	 * <p>
+	 * Adding a second reference of a Lot already added will return false.
 	 * @param lot
 	 * @return
 	 */
 	public boolean addLot(Lot lot){
-		return lots.add(lot);
+		if (lot.isBuilt()){
+			return lots.add(lot);
+		}
+		return false;
 	}
 	
 	/**
-	 * Adds a connection to the road network at Lot, returns true iff this added a new lot.
+	 * Adds a connection to the road network at Lot, returns true iff this added a new Lot to the set of connections.
 	 * <p>
-	 * This might fail if it is determined the lot can't be used reasonably for this purpose, for instance, if the Lot isn't paved.
+	 * This will fail if the Lot is not paved, or is not adjacent to any Lot in the Location.
+	 * <p>
+	 * Also, this will return false if attempting to add a connection that is already established.	 
+	 * 
 	 */
 	public boolean addConnection(Lot lot){
 		
-		if (lot.isPaved()){
+		boolean flag = false;
+		for (Lot myLot : this.lots){
+			if (city.getLotManager().getNeighbors(myLot).contains(lot)){
+				flag = true;				
+			}
+		}
+		
+		if (flag && lot.isPaved()){
 			return this.connections.add(lot);
 		}
 		return false;
@@ -133,6 +172,16 @@ public class Location implements OnOffPoint, Drivable {
 	}
 	
 	@Override
+	public boolean dumpFinishedDrives() {
+		if (this.done.isEmpty()){
+			return false;
+		} else {
+			this.done.clear();
+		}
+		return true;
+	}
+	
+	@Override
 	/**
 	 * Adds Drive instances to this Location to move eventually onto the network of roads.
 	 * <p>
@@ -151,7 +200,10 @@ public class Location implements OnOffPoint, Drivable {
 	 * Drive is guaranteed to be legal and valid.
 	 */	
 	public void turnOn(Drive drive) {
+		// LOGGER.info("Attempting to add " + drive + " to turn ons.");
 		Drivable out = drive.getGraphPath().getEdgeList().get(0);
+		this.removeResident(drive.getDriver());
+		// the driver is physically removed from the location and becomes a "drive"
 		if (this.turnOns.keySet().contains(out)){
 			turnOns.get(out).add(drive);
 		} else {
@@ -167,18 +219,21 @@ public class Location implements OnOffPoint, Drivable {
 				
 		while (!drives.isEmpty()){
 			Drive d = drives.remove();
-
-				
+			
 			if (this.equals(d.getEnd())){
 				d.finish(time);
 				this.done.add(d);
+				d.getDriver().setCurrentLocation(this);
+				this.addResident(d.getDriver());
+				LOGGER.info(d + " finishes at " + this);
 			} else {
 				Drivable r = d.next(this);
+				LOGGER.info(d + " drives into " + this);
 				
 				if (r == null)
 					throw new IllegalArgumentException("One of the drives has nowhere to go from this Location.");
 				
-				LOGGER.info(d + " attempts to turn onto " + r);
+				// LOGGER.info(d + " attempts to turn onto " + r);
 	
 				// if we've already seen the road this drive wants to get onto...
 				if (map.keySet().contains(r)){ 
@@ -196,11 +251,12 @@ public class Location implements OnOffPoint, Drivable {
 
 		Set<Drive> rejects = new HashSet<>();
 		
+		// attempts to simply move the Drives through, much like an Xing
 		// now actually attempt to move drive off...
 		for (Drivable r : map.keySet()){
-			LOGGER.info(map.get(r).size() + " car(s) attempting to turn onto " + r); 
+			// LOGGER.info(map.get(r).size() + " car(s) attempting to turn onto " + r); 
 			Set<Drive> localRejects = r.take(map.get(r), time);
-			LOGGER.info(localRejects.size() + " car(s) cannot turn onto " + r); 
+			// LOGGER.info(localRejects.size() + " car(s) cannot turn onto " + r); 
 			rejects.addAll(localRejects);
 		}
 
@@ -209,11 +265,12 @@ public class Location implements OnOffPoint, Drivable {
 
 	@Override
 	public void flow(LocalDateTime time) {
+		// LOGGER.info(this + " flow is triggered.");
 		for (Drivable d : turnOns.keySet()){
 			List<Drive> drives = new ArrayList<>(turnOns.get(d));
 			// sort by time...
 			drives.sort(
-					(Drive drive1, Drive drive2) -> drive1.getStartTime().compareTo(drive2.getStartTime()));
+					(Drive drive1, Drive drive2) -> drive1.getAttemptStartTime().compareTo(drive2.getAttemptStartTime()));
 			List<Drive> rejects = new ArrayList<Drive>(d.take(new ArrayDeque<Drive>(drives), time));
 			turnOns.put(d, rejects);			
 		}
@@ -228,7 +285,19 @@ public class Location implements OnOffPoint, Drivable {
 	}
 
 	public String toString(){
-		return "Location " + this.id + " with " + lots.size() + " lot(s)";
+		return "Location " + id + " (" + label + ")";
 	}
 
+	public int getNumberOfLots(){
+		return this.lots.size();
+	}
+	
+	public Set<Drive> getDrives(){
+		Set<Drive> rSet = new HashSet<>();
+		for (Drivable destination : turnOns.keySet()){
+			rSet.addAll(turnOns.get(destination));
+		}
+		return rSet;
+	}
+	
 }

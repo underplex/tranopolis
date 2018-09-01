@@ -139,6 +139,7 @@ public class Road implements Drivable {
 		while (this.availableCapacity() > 0 && pushing.size() > 0 ){
 			
 			Drive d = pushing.remove();
+			LOGGER.info(d + " is added to " + this);
 			Eta e = new Eta(d, time.plusSeconds(this.estimateTravelSeconds(d)));
 			this.drives.add(d);
 			this.etas.add(e);
@@ -236,7 +237,7 @@ public class Road implements Drivable {
 	
 	@Override
 	public String toString(){
-		return "Road with length " + this.segments.size() + " from " + this.source + " to " + this.target;
+		return "Road from " + this.source + " to " + this.target;
 	}
 	
 	private class Eta implements Comparable<Eta>{
@@ -278,8 +279,6 @@ public class Road implements Drivable {
 	 * @return long seconds that would be needed for <tt>Drive</tt> to travel from source to target xing given current traffic conditions and assuming no jam
 	 */
 	private long estimateTravelSeconds(Drive drive){
-		// double proportion = ((double)this.totalCapacity() - (double)this.availableCapacity())/(double)this.totalCapacity();
-		
 		// when this is 1, no delay because of other traffic...when 0.1, traffic is very tight (we should never be calling this when = 0)
 		double prop = (double)(this.totalCapacity() - this.availableCapacity())/ (double) this.totalCapacity();
 		double c = Math.min(1.5, 1.0 + 1.0/(prop * (double)INVERSE_SCALING)); // quick way to get value from ~1.0 to ~1.5; for prop > 0.1 will just scale, for < 0.1 will max at 1.5
@@ -295,4 +294,7 @@ public class Road implements Drivable {
 		return new HashSet<>(this.drives);
 	}
 
+	public int getNumberOfLots(){
+		return this.segments.size();
+	}
 }

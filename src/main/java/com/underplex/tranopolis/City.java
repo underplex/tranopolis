@@ -1,6 +1,7 @@
 package com.underplex.tranopolis;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 /**
  * Instance represents a city.
@@ -14,9 +15,15 @@ public class City {
 	 */
 	public static final LocalDateTime DEFAULT_START = LocalDateTime.of(1900, 1, 1, 0, 0);
 	
+	/**
+	 * Default number of seconds the simulation advances at each step.
+	 */
+	private static final long DEFAULT_PERIOD_SECONDS = 60;
+
 	private final LotManager lots;
 	private final LocationManager locations;
 	private final DrivableGraphManager roadGraphs;
+
 	private final TrafficManager traffic;
 	private final ResidentManager residents;
 	private final TimeManager timer;
@@ -28,7 +35,7 @@ public class City {
 		this.lots = new LotManager(this, width, height);
 		this.traffic = new TrafficManager(this);
 		this.residents = new ResidentManager(this);
-		this.timer = new TimeManager(this, start);
+		this.timer = new TimeManager(this, start, DEFAULT_PERIOD_SECONDS);
 		this.roadGraphs = new DrivableGraphManager(this);
 		this.locations = new LocationManager(this);
 		roadGraphs.updateGraph();
@@ -74,6 +81,10 @@ public class City {
 		return timer;
 	}
 
+	public DrivableGraphManager getGraphManager() {
+		return roadGraphs;
+	}
+	
 	public boolean connectLocation(Location location, Lot lot){
 		return location.addConnection(lot);
 	}	
@@ -94,7 +105,10 @@ public class City {
 		this.timer.advanceSeconds(seconds);
 		// notify residents that the time has changed
 		this.residents.advance(this.timer.getCurrentTime());
-		this.traffic.forward(this.timer.getCurrentTime(),this.residents.surveyDrives(this.timer.getCurrentTime()));
+		Set<Drive> drives = this.residents.surveyDrives(this.timer.getCurrentTime());
+		// notify drivers that there drives have started
+
+		this.traffic.forward(this.timer.getCurrentTime(), drives);
 	}
 
 }

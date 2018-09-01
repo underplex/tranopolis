@@ -32,5 +32,17 @@ public interface Drivable {
 	 * @param time <tt>LocalDateTime</tt> that this process begins
 	 */
 	public void flow(LocalDateTime time);
+	
+	/**
+	 * Returns number of lots that traversing this Drivable would represent.
+	 * <p>
+	 * Generally, represents the number of lots this takes up.
+	 */
+	public int getNumberOfLots();
+
+	/**
+	 * Returns Drives that are currently at or on this Drivable.
+	 */
+	public Set<Drive> getDrives();
 
 }

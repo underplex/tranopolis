@@ -4,11 +4,11 @@ import java.util.Queue;
 import java.util.Set;
 
 /**
- * Represents a place where a <tt>Drive</tt> can get on the road network or get off the road network.
+ * Represents a place where a <tt>Drive</tt> can get on the road network or get off the road network. Must also itself be a part of the road network.
  * @author Brandon Irvine, brandon@underplex.com
  *
  */
-public interface OnOffPoint {
+public interface OnOffPoint extends Drivable {
 	
 	/**
 	 * Adds all the <tt>Drive</tt>s to this <tt>OnOffPoint</tt>.
@@ -43,4 +43,11 @@ public interface OnOffPoint {
 	 * The <tt>Set</tt> returned can be changed without any change to the underlying Set; it is meant to be a defensive copy of any internal representation.
 	 */ 
 	Set<Drive> getFinishedDrives();
+	
+	/**
+	 * Clears all references to finished drives. Used for memory management.
+	 * <p>
+	 * Returns true iff any references were dropped this way. 
+	 */
+	boolean dumpFinishedDrives();
 }

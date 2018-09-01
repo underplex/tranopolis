@@ -75,10 +75,13 @@ public class Xing implements Drivable {
 				
 		while (!drives.isEmpty()){
 			Drive d = drives.remove();
+			LOGGER.info(this + " takes " + d);
+
 			Drivable r = d.next(this);
 			if (r == null){
 				throw new IllegalArgumentException("One of the drives has nowhere to go from this Xing.");
 			}
+			
 			LOGGER.info(d + " attempts to turn onto " + r);
 
 			// if we've already seen the road this drive wants to get onto...
@@ -114,6 +117,15 @@ public class Xing implements Drivable {
 
 	public String toString(){
 		return "Xing at (" + lot.getX() + ", " + lot.getY() + ")";
+	}
+	
+	public int getNumberOfLots(){
+		return 1;
+	}
+
+	@Override
+	public Set<Drive> getDrives() {
+		return new HashSet<>();
 	}
 	
 }

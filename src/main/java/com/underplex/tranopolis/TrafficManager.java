@@ -9,9 +9,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 public class TrafficManager {
 
+    private final static Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+	
 	private final City city;
 	private final Map<Resident, Drive> upcoming;
 	private final Comparator<Drive> sorter;
@@ -22,7 +25,7 @@ public class TrafficManager {
 			{
 			@Override
 			public int compare(Drive arg0, Drive arg1) {
-				return arg0.getStartTime().compareTo(arg1.getStartTime());
+				return arg0.getAttemptStartTime().compareTo(arg1.getAttemptStartTime());
 			}
 			
 		};
@@ -32,6 +35,10 @@ public class TrafficManager {
 	
 	/**
 	 * Moves all traffic forward a step at <tt>time</tt>.
+	 * <p>
+	 * This includes adding Drives to the network because they are scheduled to begin or were already scheduled to begin.
+	 * <p>
+	 * Drives passed are assumed to be legal and valid.
 	 * @param time LocalDateTime representing time being moved forward to
 	 * @param beginngers Set of Drives that are due to begin
 	 */
@@ -39,6 +46,8 @@ public class TrafficManager {
 		
 		// get any turn ons that need to happen
 		for (Drive drive : beginners){
+			drive.getDriver().startDrive(drive);
+			drive.begin(time);
 			drive.getOnPoint().turnOn(drive);
 		}
 		

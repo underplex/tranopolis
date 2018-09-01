@@ -3,6 +3,7 @@ package com.underplex.tranopolis;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -51,7 +52,11 @@ public class TestCity {
 		
 		City city = new City(5,5);
 		
-		// make a cross
+//		. . R . b 
+//		. . R . b 
+//		R R R R R 
+//		. b R . . 
+//		. b R . . 
 		
 		city.getLot(0, 2).makePaved();
 		city.getLot(1, 2).makePaved();
@@ -65,8 +70,18 @@ public class TestCity {
 		city.getLot(2, 3).makePaved();
 		city.getLot(2, 4).makePaved();
 		
+		city.getLot(1, 1).makeBuilt();
+		
+		city.getLot(1, 0).makeBuilt();
+		
+		city.getLot(1, 0).makeBuilt();
+		
+		city.getLot(4, 3).makeBuilt();
+		city.getLot(4, 4).makeBuilt();
+		
 		city.getLotManager().printMap();
 		
+		// build the graph without any Locations defined or added
 		Map<Lot, Set<Lot>> xings = GraphFinder.findXingLots(city);
 		assertEquals(5, xings.keySet().size());
 		
@@ -80,6 +95,43 @@ public class TestCity {
 		
 		assertTrue(xings.get(north).contains(city.getLot(2,3)));
 		
+		// define locations
+		
+		Location offCenterLoc = city.getLocationManager().makeLocation(city.getLot(1, 1));
+		Location southCenterLoc = city.getLocationManager().makeLocation(city.getLot(0, 1));
+		
+		Location northeastLoc = city.getLocationManager().makeLocation(city.getLot(4, 3));
+		northeastLoc.addLot(city.getLot(4, 4));
+		
+		assertEquals(3, city.getLocationManager().getLocations().size());
+		assertEquals(2, northeastLoc.getLots().size());
+		
+		// now add connections...
+		
+		assertTrue(offCenterLoc.addConnection(city.getLot(1, 2)));
+		assertTrue(offCenterLoc.addConnection(city.getLot(2, 1)));
+		assertFalse(offCenterLoc.addConnection(city.getLot(2, 2)));
+		
+		assertTrue(northeastLoc.addConnection(city.getLot(4, 2)));
+		assertFalse(northeastLoc.addConnection(city.getLot(4, 2)));
+		assertFalse(northeastLoc.addConnection(city.getLot(3, 3)));
+		
+		assertFalse(southCenterLoc.addConnection(city.getLot(2, 2)));
+				
+		// notice these are two distinct locations, despite being adjacent built		
+	
+		DrivableGraph graph = GraphFinder.findDrivableGraph(city);
+		
+		// vertices include:
+			// 3 Locations
+			// 1 xing at paved crossroads
+			// 4 xings at end of road
+			// 2 connections from location to road network where there isn't already an xing
+		assertEquals(10, graph.vertexSet().size());
+		// edges include
+			// 6 entrances/exits
+			// 12 roads between all xings and connection points
+		assertEquals(18, graph.edgeSet().size());	
 		
 	}
 	
@@ -91,7 +143,11 @@ public class TestCity {
 		
 		City city = new City(5,5);
 		
-		// make a cross
+//		. . . R R 
+//		. R R R . 
+//		R . R . . 
+//		R . . . R 
+//		R . . R . 
 		
 		city.getLot(0, 0).makePaved();
 		city.getLot(0, 1).makePaved();
@@ -108,7 +164,7 @@ public class TestCity {
 		city.getLot(4, 1).makePaved();
 		
 		city.getLotManager().printMap();
-		
+
 		Map<Lot, Set<Lot>> xings = GraphFinder.findXingLots(city);
 		
 		assertEquals(8, xings.keySet().size());
@@ -136,9 +192,7 @@ public class TestCity {
 		assertEquals(0, xings.get(southeast1).size());
 		assertEquals(0, xings.get(southeast2).size());
 		
-		// assertTrue(xings.get(north).contains(city.getLot(2,3)));
-		
-		// now test whether this road network is correctly represented by GraphFinder
+		// now test whether this road network AS IS is correctly represented by GraphFinder
 		
 		Map<Xing, Set<Lot>> xingMap = GraphFinder.makeXingMap(xings);
 		
@@ -146,52 +200,6 @@ public class TestCity {
 		
 		assertEquals(8, roads.size());
 		
-		// check that locations are adequately added, etc.
-		
-		Location loc1 = city.getLocationManager().makeLocation(city.getLot(0, 4));
-		Location loc2 = city.getLocationManager().makeLocation(city.getLot(3, 1));
-		
-		Set<Lot> officeSet = new HashSet<>();
-		officeSet.add(city.getLot(1, 4));
-		officeSet.add(city.getLot(2, 4));
-	
-		Location development = city.getLocationManager().makeLocation(city.getLot(0, 3));
-		Location officePark = city.getLocationManager().makeLocation(officeSet);
-
-		// test basic assumptions about locations
-		
-		assertTrue(development.addConnection(northeast));
-		
-		assertTrue(officePark.addConnection(northwest));
-		assertTrue(loc1.addConnection(southeast1));
-		assertTrue(loc1.addConnection(southeast2));
-		assertTrue(loc2.addConnection(southeast1));
-		assertTrue(loc2.addConnection(southeast2));
-		
-		// we can't add the lots again
-		
-		assertTrue(!development.addConnection(northeast));
-		
-		assertTrue(!officePark.addConnection(northwest));
-		assertTrue(!loc1.addConnection(southeast1));
-		assertTrue(!loc1.addConnection(southeast2));
-		
-		assertTrue(!loc2.addConnection(southeast1));
-		assertTrue(!loc2.addConnection(southeast2));
-		
-		// now build a graph
-
-		assertEquals(4, city.getLocationManager().connectionMap().keySet().size());
-		city.getLocationManager().extensiveReport();
-		
-		DrivableGraph roadNetwork = GraphFinder.findDrivableGraph(city);
-		
-		// in addition to the 8 existing roads, we've added 6 entrances/6 exits by adding locations and connecting them
-		roadNetwork.extensiveReport();
-		assertEquals(4,city.getLocationManager().connectionMap().keySet().size());
-		assertEquals(20,roadNetwork.edgeSet().size());
-				
 	}
-
-
+	
 }

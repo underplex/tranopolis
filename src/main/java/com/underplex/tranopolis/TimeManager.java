@@ -1,6 +1,7 @@
 package com.underplex.tranopolis;
 
 import java.time.LocalDateTime;
+import java.util.logging.Logger;
 
 /**
  * Manages time for an instance of <tt>City</tt>.
@@ -9,21 +10,16 @@ import java.time.LocalDateTime;
  */
 public class TimeManager {
 
+    private final static Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+
 	private LocalDateTime current;
 	private final City city;
 	private final long period;
-	
-	// default period is 3 hours
-	private static final long DEFAULT_PERIOD = (60 * 60 * 3);
 	
 	public TimeManager(City city, LocalDateTime start, long period){
 		this.city = city;
 		this.current = start;
 		this.period = period;
-	}
-	
-	public TimeManager(City city, LocalDateTime start) {
-		this(city,start,DEFAULT_PERIOD);
 	}
 
 	/**
@@ -37,7 +33,9 @@ public class TimeManager {
 	}
 	
 	public void advanceSeconds(long seconds){
+		
 		this.current = this.current.plusSeconds(seconds);
+		LOGGER.info("Time advanced by " + seconds + " second(s), is now " + current);
 	}
 	
 	public void advancePeriod(){

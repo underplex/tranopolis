@@ -29,6 +29,10 @@ public class Lot {
 		value = 1;
 	}
 
+	public void makeBuilt(){
+		value = 2;
+	}
+
 	public int getX() {
 		return x;
 	}
@@ -48,7 +52,14 @@ public class Lot {
 	public boolean isPaved(){
 		return (value == 1);
 	}
-	
+
+	/**
+	 * Returns <tt>true</tt> iff this is built.
+	 * @return
+	 */
+	public boolean isBuilt(){
+		return (value == 2);
+	}
 	public String toString(){
 		return "Lot at (" + this.coordinates() + ")";
 	}	

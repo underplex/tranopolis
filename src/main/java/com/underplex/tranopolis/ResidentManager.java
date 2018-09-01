@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * Manages residents for an instance of <tt>City</tt>.
@@ -16,11 +17,14 @@ import java.util.Set;
  */
 public class ResidentManager {
 
+    private final static Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+	
 	private final City city;
 	private final Set<Resident> residents;
 	// number of seconds in advance this manage requires to plan before the simulation actually simulates a given time
 	
 	private final Set<Drive> upcomingDrives;
+	private final Set<Drive> droppedDrives;
 	private LocalDateTime lastTimePlanned;
 	
 	/**
@@ -37,6 +41,8 @@ public class ResidentManager {
 
 		this.residents = new HashSet<>();
 		this.upcomingDrives = new HashSet<>();
+		this.droppedDrives = new HashSet<>();
+		
 		// depending on how you want to set up the first day of activities, this might need to change
 		this.lastTimePlanned = null;
 	}
@@ -51,14 +57,17 @@ public class ResidentManager {
 		LocalDateTime end = time.plusSeconds(city.getTimeManager().getPeriod());
 		for (Resident r : residents){
 			upcomingDrives.addAll(r.planDrives(time, city.getRoadGraph(), time, end));
+			// TODO: maybe filter/validate these Drives in some way
 		}
 	}
 		
 	/**
 	 * Returns Drives to start at or before <tt>time</tt>.
-	 * <p> 
+	 * <p>
 	 * May return empty Set if none are to be.
-	 * @see AbstractResident
+	 * <p>
+	 * This method will not return Drives that are deemed to be logically invalid, where, for example, that a Resident attempts an impossible Drive.
+	 * @see Resident
 	 * @param time LocalDateTime that is the current time of the simulation
 	 * @return Set of Drives to begin immediately
 	 */
@@ -70,18 +79,35 @@ public class ResidentManager {
 		Collections.sort(up, new Comparator<Drive>() { 
 			@Override
 			public int compare(Drive o1, Drive o2) {
-				return o1.getStartTime().compareTo(o2.getStartTime());
+				return o1.getAttemptStartTime().compareTo(o2.getAttemptStartTime());
 			}
 		});
 
 		Set<Drive> starters = new HashSet<>();
+		// pseudo code for adding drives...
+			
 		for (Drive d : up){
-			if (d.getStartTime().isBefore(time)){
-				starters.add(d);
+			
+			if (d.getAttemptStartTime().isBefore(time) || d.getAttemptStartTime().isEqual(time)){
+				
+				// check that the driver can leave from the start location
+				if (d.getDriver().isAt(d.getOnPoint())){
+					starters.add(d);
+					upcomingDrives.remove(d);
+
+					LOGGER.info(d + " is validated and set to begin.");
+				} else if (time.isBefore(d.getDropTime())){
+					droppedDrives.add(d); // TODO: dump dropped drives at some point to improve memory
+					d.drop();
+					upcomingDrives.remove(d);
+					LOGGER.info(d + " is dropped.");
+				}
+				
 			} else {
 				break;
 			}
 		}
+		
 		return starters;
 	}
 	
@@ -91,6 +117,36 @@ public class ResidentManager {
 	 */
 	public Set<Resident> getResidents(){
 		return new HashSet<Resident>(this.residents);
+	}
+
+	/**
+	 * Force this manager to add a Drive.
+	 * <p>
+	 * Not generally used for the purposes of the simulation.
+	 * @return
+	 */
+	public void addUpcomingDrive(Drive drive){
+		upcomingDrives.add(drive);		
+	}
+	
+	public void addResidents(Set<Resident> residents){
+		for (Resident rez : residents){
+			rez.getHome().addResident(rez);
+			rez.setCurrentLocation(rez.getHome());
+		}
+		this.residents.addAll(residents);
+	}
+	
+	public void removeResidents(Set<Resident> residents){
+		for (Resident rez : residents){
+			rez.getCurrentLocation().removeResident(rez);
+			rez.setCurrentLocation(null);
+		}
+		this.residents.removeAll(residents);
+	}
+	
+	public int getPopulation(){
+		return this.residents.size();
 	}
 	
 }

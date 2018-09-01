@@ -12,31 +12,52 @@ import org.jgrapht.GraphPath;
  * @author Brandon Irvine, brandon@underplex.com
  */
 public class Drive implements Comparable<Drive>{
-
+	
+	private static final int DEFAULT_DROP_SECONDS = 60 * 60;
+	
 	private final GraphPath<Drivable, Drivable> path; // primary path to be used, minus any other information
-	private final LocalDateTime startTime; // time the Drive should start, if possible; otherwise will begin as soon as possible
-	private LocalDateTime endTime;
+	private final LocalDateTime attemptStartTime; // earliest time the Drive should start, if possible; otherwise will begin as soon as possible
+	private final LocalDateTime dropTime; // latest time the Drive could begin, if possible; after this time this Drive will not even be started
+	private DriveDisposition disposition;
+
+	private LocalDateTime actualStartTime;
+
+
+	private LocalDateTime actualEndTime;
 	private final Resident driver;
 	private final List<Drivable> route;
 	private final OnOffPoint onPoint;
 	private final OnOffPoint offPoint;
-	
+
 	public Drive(GraphPath<Drivable, Drivable> path, 
 			Resident driver,
 			LocalDateTime startTime,
 			Location startLocation,
-			Location endLocation) {
+			Location endLocation,
+			LocalDateTime dropTime) {
+		
+		if (path == null) throw new IllegalArgumentException("The path argument cannot be null.");
+		if (path.getEdgeList().size() < 1) throw new IllegalArgumentException("GraphPath must have at least 1 edge.");
+		if (driver == null) throw new IllegalArgumentException("The driver argument cannot be null.");
+		if (startTime == null) throw new IllegalArgumentException("The attemptStartTime argument cannot be null.");
+		if (dropTime == null) throw new IllegalArgumentException("The dropTime argument cannot be null.");
+		if (startLocation == null) throw new IllegalArgumentException("The startLocation argument cannot be null.");
+		if (endLocation == null) throw new IllegalArgumentException("The endLocaton argument cannot be null.");
+		
+		if (path.getEdgeList().size() < 1) throw new IllegalArgumentException("GraphPath must have at least 1 edge.");
+
 		this.path = path;
 		this.driver = driver;
-		this.startTime = startTime;
-		this.endTime = null;
+		this.attemptStartTime = startTime;
+		this.actualEndTime = null;
 		this.route = new ArrayList<>();
 		this.onPoint = startLocation;
 		this.offPoint = endLocation;
+		this.dropTime = dropTime;
+		this.disposition = DriveDisposition.WAITING;
 		
 		// notice that a Drive has to have at least 1 edge...
 		
-		if (path.getEdgeList().size() < 1) throw new IllegalArgumentException("GraphPath must have at least 1 edge.");
 		
 		boolean g = true;
 		int i = 0;
@@ -52,21 +73,57 @@ public class Drive implements Comparable<Drive>{
 		}
 		
 	}
+	
+	public Drive(GraphPath<Drivable, Drivable> path, 
+			Resident driver,
+			LocalDateTime startTime,
+			Location startLocation,
+			Location endLocation) {
+		this(path, driver, startTime, startLocation, endLocation, startTime.plusSeconds(DEFAULT_DROP_SECONDS));
+
+	}
 
 	/**
-	 * Marks this <tt>Drive</tt> as finished, in which case it is immutable. Returns true iff this method actually made this finished, or false if it was already finished.
+	 * If possible, make this <tt>Drive</tt> finished, in which case it is immutable. Returns true iff this method actually made this finished.
 	 * @param time end time of this drive
 	 * @return true iff this method actually made this finished
 	 */
 	public boolean finish(LocalDateTime time){
-		if (this.endTime == null){
-			this.endTime = time;
-		}
-		return false;
+		boolean rVal = false;
+		if (this.actualEndTime == null && disposition == DriveDisposition.BEGUN){
+			this.actualEndTime = time;
+			this.disposition = DriveDisposition.FINISHED;
+			rVal = true;
+		}		
+		return rVal;
 	}
 	
-	public boolean isFinished(){
-		return (this.endTime != null);
+	/**
+	 * Notifies this Drive that it has begun. Returns truee iff this method actually began the Drive.
+	 * @param time
+	 * @return
+	 */
+	public boolean begin(LocalDateTime time){
+		boolean rVal = false;
+		if (this.actualStartTime == null && disposition == DriveDisposition.WAITING){
+			this.actualStartTime = time;
+			this.disposition = DriveDisposition.BEGUN;
+			rVal = true;
+		}		
+		return rVal;
+	}
+
+	/**
+	 * If possible, make this <tt>Drive</tt> dropped, in which case it is immutable. Returns true iff this method actually made this dropped.
+	 * @return true iff this method actually made this dropped
+	 */
+	public boolean drop(){
+		boolean rVal = false;
+		if (disposition == DriveDisposition.WAITING){
+			this.disposition = DriveDisposition.DROPPED;
+			rVal = true;
+		}		
+		return rVal;
 	}
 
 	/**
@@ -83,12 +140,12 @@ public class Drive implements Comparable<Drive>{
 		return r;
 	}
 	
-	public LocalDateTime getStartTime() {
-		return startTime;
+	public LocalDateTime getAttemptStartTime() {
+		return attemptStartTime;
 	}
 
 	public String toString(){
-		return "Drive: " + driver.toString() + "; " + this.getGraphPath().getStartVertex() + ", " + this.getGraphPath().getEndVertex() + " starting at " + this.startTime; 
+		return "Drive (" + this.driver +  " from " + this.getGraphPath().getStartVertex() + " to " + this.getGraphPath().getEndVertex() + ")"; 
 	}
 
 	public GraphPath<Drivable, Drivable> getGraphPath(){
@@ -120,6 +177,29 @@ public class Drive implements Comparable<Drive>{
 	public OnOffPoint getOffPoint() {
 		return offPoint;
 	}
+	
+	public DriveDisposition getDisposition() {
+		return disposition;
+	}
+
+	/**
+	 * Time after which this Drive should not be started.
+	 * <p>
+	 * Null is never returned.
+	 * @return LocalDateTime.
+	 */
+	public LocalDateTime getDropTime() {
+		return dropTime;
+	}
+	
+	public LocalDateTime getActualStartTime() {
+		return actualStartTime;
+	}
+
+	public LocalDateTime getActualEndTime() {
+		return actualEndTime;
+	}
+
 }
 
 

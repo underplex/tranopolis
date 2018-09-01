@@ -34,13 +34,13 @@ public class GraphFinder {
 	 * Any Xing or Location connected to itself (and nothing else) in a loop of paved Lots will have a Road edge going in both directions, clockwise and counter-clockwise.
 	 * <p>
 	 * Any paved lots with a number of paved neighbors that is not 2 will be considered an Xing.
+	 * <p>
+	 * Any Locations will be represented as vertices, whether they actually connect to the network or not.
 	 * @param city
 	 * @return
 	 */
 	public static DrivableGraph findDrivableGraph(City city) {
 		Map<Lot, Set<Lot>> xings = GraphFinder.findXingLots(city);
-
-		// Map<Lot, Set<Lot>> entryPoints = GraphFinder.findEntryPointNeighbors(city);
 
 		// add entry points that may not already be xings
 		xings.putAll(GraphFinder.findEntryPointNeighbors(city));

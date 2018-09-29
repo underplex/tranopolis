@@ -21,28 +21,38 @@ public class LocationManager {
 	private static long locationCounter = 0;
 	private final Set<Location> locations;
 	private final City city;
-	private final Set<Location> labels;
+	private final Map<String, Location> labels;
 	
 	public LocationManager(City city) {
 		this.city = city;
 		this.locations = new HashSet<>();
-		this.labels = new HashSet<>();
+		this.labels = new HashMap<>();
 	}
 	
+	// TODO: Make sure this adds the location's label (and checks that label is valid) to label map
 	/**
 	 * Creates and returns a <tt>Location</tt> formed by <tt>lots</tt> or returns <tt>null</tt> if not possible.
 	 * <p>
 	 * One reason this might fail is if one of the <tt>Lot</tt>s passed is already associated with an existing Location.
-	 * Another is if a lot is paved.
+	 * Another is if all the lots are built.
+	 * <p>
+	 * Also, this will fail if the label is already taken. Note that labels are case-insensitive.
 	 * <p>
 	 * The Set of Lots may be changed.
 	 * <p>
 	 * @param lots Set of Lots to form the Location
+	 * @param label String of label to use for this location, or null if none is needed
 	 * @return <tt>Location</tt> associated with some lots or null if the Location can't be created
 	 */
 	public Location makeLocation(Set<Lot> lots, String label){
 		Location loc = null;
 		boolean okay = true;
+		
+		if (label != null &&
+				this.labels.containsKey(label.toUpperCase())){
+			okay = false;
+		}
+		
 		for (Location existing : this.locations){
 			if (Sets.intersection(lots, existing.getLots()).size() != 0){
 				okay = false;
@@ -50,7 +60,7 @@ public class LocationManager {
 			}
 		}
 		for (Lot lot : lots){
-			if (lot.isPaved()){
+			if (!lot.isBuilt()){
 				okay = false;
 				break;
 			}
@@ -65,7 +75,7 @@ public class LocationManager {
 
 			}
 			this.locations.add(loc);
-
+			this.labels.put(loc.getLabel().toUpperCase(), loc);
 		}
 		return loc; 
 	}
@@ -156,6 +166,17 @@ public class LocationManager {
 		for (Location loc : locations){
 			System.out.println("____ " + loc.toString());
 		}
+	}
+	
+	/**
+	 * Returns location associated with label, or <tt>null</tt> if none is.
+	 * <p>
+	 * The search is not case sensitive but partial string matches will not return a Location.
+	 * @param label
+	 * @return
+	 */
+	public Location get(String label){
+		return this.labels.get(label.toUpperCase());
 	}
 
 }

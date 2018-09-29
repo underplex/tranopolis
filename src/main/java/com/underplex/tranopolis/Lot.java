@@ -7,6 +7,7 @@ package com.underplex.tranopolis;
  */
 public class Lot {
 
+	public static final double LENGTH_IN_M = 100.0; // length of a lot in meters
 	private final int x;
 	private final int y;
 	private int value;

@@ -50,7 +50,6 @@ public class Demo {
 		city.getLot(4, 3).makeBuilt();
 		city.getLot(4, 0).makeBuilt();
 		
-
 		city.getLot(0, 0).makeBuilt();
 		city.getLot(0, 4).makeBuilt();
 				
@@ -59,170 +58,58 @@ public class Demo {
 		city.getGraphManager().updateGraph();
 		
 		DrivableGraph roadGraph = city.getRoadGraph();
-		
-		// how to add xing
-
-		// test vertice between any locations are added
-		// six vertices here -- including 1 isolated vertex
-		
+				
 		// create locations...
-		Location eastLoc = city.getLocationManager().makeLocation(city.getLot(3, 4), "Eastview Apts");
-		Location northLoc = city.getLocationManager().makeLocation(city.getLot(4, 3), "North Lake Mall");
-		Location southeastLoc = city.getLocationManager().makeLocation(city.getLot(4, 0), "Southern Hills Condos");
-		Location southwestLoc = city.getLocationManager().makeLocation(city.getLot(0, 0), "Southwest Mountain Apartments");
-		Location northwestLoc = city.getLocationManager().makeLocation(city.getLot(0, 4), "Northwest Heights Office Park");
+		Location northviewApts = city.getLocationManager().makeLocation(city.getLot(3, 4), "Northview Apts");
+		Location eastLakeMall = city.getLocationManager().makeLocation(city.getLot(4, 3), "East Lake Mall");
+		Location southernHillsCondos = city.getLocationManager().makeLocation(city.getLot(4, 0), "Southern Hills Condos");
+		Location swMountainApts = city.getLocationManager().makeLocation(city.getLot(0, 0), "Southwest Mountain Apartments");
+		Location nwHghtsOfficePark = city.getLocationManager().makeLocation(city.getLot(0, 4), "Northwest Heights Office Park");
 		
 		// connect locations to existing network of roads
-		city.connectLocation(eastLoc, city.getLot(3, 3));
-		city.connectLocation(northLoc, city.getLot(3, 3));
-		city.connectLocation(southeastLoc, city.getLot(4, 1));
+		city.connectLocation(northviewApts, city.getLot(3, 3));
+		city.connectLocation(eastLakeMall, city.getLot(3, 3));
+		city.connectLocation(southernHillsCondos, city.getLot(4, 1));
 		
-		city.connectLocation(southwestLoc, city.getLot(1, 0));
-		city.connectLocation(northwestLoc, city.getLot(1, 4));
+		city.connectLocation(swMountainApts, city.getLot(1, 0));
+		city.connectLocation(nwHghtsOfficePark, city.getLot(1, 4));
+
+		// update the graph!
 		city.getGraphManager().updateGraph();
 		
 //		LOGGER.info("There are " + city.getRoadGraph().vertexSet().size() + " vertices.");
 //		LOGGER.info("There are " + city.getRoadGraph().edgeSet().size() + " edges.");
 
 		DijkstraShortestPath<Drivable, Drivable> dsp = new DijkstraShortestPath<Drivable, Drivable>(city.getRoadGraph());
-		GraphPath<Drivable,Drivable> path = dsp.getPath(eastLoc, northLoc);
+		GraphPath<Drivable,Drivable> path = dsp.getPath(northviewApts, eastLakeMall);
 //		LOGGER.info("Path is " + path);
 		
-//		city.getResidentManager().addResidents(makeBasics(1000,eastLoc,northLoc));
-		city.getResidentManager().addResidents(makeBasics(1000,southeastLoc,northwestLoc));
+		city.getResidentManager().addResidents(makeBasics(1000,northviewApts,eastLakeMall));
+//		city.getResidentManager().addResidents(makeBasics(1000,southeastLoc,northwestLoc));
 //		city.getResidentManager().addResidents(makeBasics(1,southwestLoc,northwestLoc));
 		
 		LocalDateTime genesis = city.getTimeManager().getCurrentTime();
-		Set<Drive> finishedDrives = new HashSet<>();
-		// how to study these things?
-		List<DriveCount> driveCounts = new ArrayList<>();
-		List<DrivableCount> drivableCounts = new ArrayList<>();
-		List<LocationCount> locationCounts = new ArrayList<>();
-		List<SumCount> sumCounts = new ArrayList<>();
-		Set<Drive> allDrives = new HashSet<>();
+
+		Tabulator tabulator = new Tabulator(city);
 		
+		System.out.println(System.getProperty("user.dir"));
 		while (city.getTimeManager().getCurrentTime().isBefore(genesis.plusDays(1))){
 			city.advance();
 
-			// do count necessary for info collection
 			if (city.getTimeManager().getCurrentTime().getMinute() % 10 == 0){
-				String timeString = city.getTimeManager().getCurrentTime().toString();
-				
-				sumCounts.add(Counter.countSums(city));
-								
-				DriveCount driveCount = new DriveCount();
-				driveCount.setTime(timeString);
-				driveCount.setFinishedDrives(city.getLocationManager().getFinishedDrives().size());				
-				driveCount.setDayOfWeek(city.getTimeManager().getCurrentTime().getDayOfWeek().toString());
-				driveCounts.add(driveCount);
-				
-				allDrives.addAll(city.getLocationManager().getFinishedDrives());
-				
-				// finishedDrives.addAll(city.getLocationManager().getFinishedDrives());
-				// city.getLocationManager().dumpFinishedDrives();
-				
-				for (Drivable dc : city.getRoadGraph().vertexSet()){
-					DrivableCount drivableCount = new DrivableCount();
-					drivableCount.setTime(timeString);
-					drivableCount.setDayOfWeek(city.getTimeManager().getCurrentTime().getDayOfWeek().toString());
-
-					drivableCount.setNumberOfDrives(dc.getDrives().size());
-					drivableCount.setDrivable(dc.toString());
-					drivableCounts.add(drivableCount);
-				}
-
-				for (Drivable dc : city.getRoadGraph().edgeSet()){
-					DrivableCount drivableCount = new DrivableCount();
-					drivableCount.setTime(timeString);
-					drivableCount.setDayOfWeek(city.getTimeManager().getCurrentTime().getDayOfWeek().toString());
-
-					drivableCount.setNumberOfDrives(dc.getDrives().size());
-					drivableCount.setDrivable(dc.toString());
-					drivableCounts.add(drivableCount);
-				}
-				
-				Set<Drive> lcDrives = new HashSet<>();
-				for (Location lc : city.getLocationManager().getLocations()){
-					LocationCount locationCount = new LocationCount();
-					locationCount.setTime(timeString);
-					locationCount.setDayOfWeek(city.getTimeManager().getCurrentTime().getDayOfWeek().toString());
-
-					locationCount.setNumberOfResidents(lc.getResidents().size());
-					locationCount.setLocation(lc.toString());
-					
-					int lengthSum = 0;
-					for (Drive ld : lc.getFinishedDrives()){
-						lengthSum += ChronoUnit.SECONDS.between(ld.getActualStartTime(),ld.getActualEndTime());
-					}
-					int n = lc.getFinishedDrives().size();
-					if (n > 0){
-						locationCount.setAverageDriveTime((double)lengthSum/(double)n);
-					} else {
-						locationCount.setAverageDriveTime(0.0);
-					}
-					
-					allDrives.addAll(lc.getFinishedDrives());
-					locationCounts.add(locationCount);
-				}
-				
-				city.getLocationManager().dumpFinishedDrives();
+				tabulator.update();
 			}
-			
-		}
 		
-		// write city counts
-		Writer finishedDrivesWriter = null;
-		Writer locationWriter = null;
-		Writer drivableWriter = null;
-		Writer sumWriter = null;
+		}
 
-		String experimentName = "";
-		experimentName = "_1000_se_nw";
-		String directory = "C:/Users/irvin/workspace/tranopolis/target/output-files";
-		String driveFile = "finished_drives";
-		String locationFile = "locations";
-		String drivableFile = "drivables";
-		String sumFile = "sums";
 		
 		try {
-			finishedDrivesWriter = new FileWriter(directory + "/" + driveFile + experimentName + ".csv");
-			locationWriter = new FileWriter(directory + "/" + locationFile + experimentName + ".csv");
-			drivableWriter = new FileWriter(directory  + "/" + drivableFile + experimentName + ".csv");
-			sumWriter = new FileWriter(directory + "/" + sumFile + experimentName + ".csv");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	    StatefulBeanToCsvBuilder<DriveCount> drivesBuilder = new StatefulBeanToCsvBuilder<DriveCount>(finishedDrivesWriter); 
-	    StatefulBeanToCsv<DriveCount> drivesToCsv = drivesBuilder.build();
-
-	    StatefulBeanToCsvBuilder<LocationCount> locationsBuilder = new StatefulBeanToCsvBuilder<LocationCount>(locationWriter); 
-	    StatefulBeanToCsv<LocationCount> locationsToCsv = locationsBuilder.build();
-
-	    StatefulBeanToCsvBuilder<DrivableCount> drivableBuilder = new StatefulBeanToCsvBuilder<DrivableCount>(drivableWriter); 
-	    StatefulBeanToCsv<DrivableCount> drivablesToCsv = drivableBuilder.build();
-	    
-	    StatefulBeanToCsvBuilder<SumCount> sumBuilder = new StatefulBeanToCsvBuilder<SumCount>(sumWriter); 
-	    StatefulBeanToCsv<SumCount> sumsToCsv = sumBuilder.build();
-	    
-
-	    try {
-			drivesToCsv.write(driveCounts);
-		    finishedDrivesWriter.close();
-
-			locationsToCsv.write(locationCounts);
-		    locationWriter.close();
-
-			drivablesToCsv.write(drivableCounts);
-		    drivableWriter.close();
-
-			sumsToCsv.write(sumCounts);
-		    sumWriter.close();
-
+			Filer.writeToFiles(tabulator, "C:/Users/irvin/workspace/tranopolis/target/output-files", "_demo");
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
+			LOGGER.info("File write failed.");
 			e.printStackTrace();
 		}
+
 	}
 	
 	public static Set<Resident> makeBasics(int num,Location home,Location work){

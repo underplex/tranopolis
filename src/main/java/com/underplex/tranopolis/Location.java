@@ -38,6 +38,16 @@ public class Location implements OnOffPoint, Drivable {
     private final String label;
 
     /**
+     * Returns true if this Location has this label.
+     * <p>
+     * Note that labels are considered on case-insensitive basis.
+     * @param label
+     */
+    public boolean hasLabel(String label){
+    	return this.label.toUpperCase().equals(label.toUpperCase());
+    }
+    
+    /**
      * Generally, not the preferred way to create a Lot. Use LocationManager.makeLocation instead.
      * @param city
      * @param lots
@@ -288,6 +298,10 @@ public class Location implements OnOffPoint, Drivable {
 		return "Location " + id + " (" + label + ")";
 	}
 
+	public String getLabel(){
+		return label;
+	}
+	
 	public int getNumberOfLots(){
 		return this.lots.size();
 	}

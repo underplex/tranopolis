@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -55,7 +56,7 @@ public class TestCity {
 //		. . R . b 
 //		. . R . b 
 //		R R R R R 
-//		. b R . . 
+//		b b R . . 
 //		. b R . . 
 		
 		city.getLot(0, 2).makePaved();
@@ -74,7 +75,7 @@ public class TestCity {
 		
 		city.getLot(1, 0).makeBuilt();
 		
-		city.getLot(1, 0).makeBuilt();
+		city.getLot(0, 1).makeBuilt();
 		
 		city.getLot(4, 3).makeBuilt();
 		city.getLot(4, 4).makeBuilt();
@@ -103,6 +104,10 @@ public class TestCity {
 		Location northeastLoc = city.getLocationManager().makeLocation(city.getLot(4, 3));
 		northeastLoc.addLot(city.getLot(4, 4));
 		
+		assertNotNull(offCenterLoc);
+		assertNotNull(southCenterLoc);
+		assertNotNull(northeastLoc);
+				
 		assertEquals(3, city.getLocationManager().getLocations().size());
 		assertEquals(2, northeastLoc.getLots().size());
 		

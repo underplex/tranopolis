@@ -16,6 +16,9 @@ import java.util.Set;
  */
 public class GraphFinder {
 
+	public static final int DEFAULT_ENTRANCE_MAX_SPEED = 16;
+	public static final int DEFAULT_EXIT_MAX_SPEED = 16;
+	
 	private GraphFinder() {
 		// don't instantiate
 	}
@@ -75,8 +78,8 @@ public class GraphFinder {
 		for (Location loc : locMap.keySet()){
 			for (Lot lot : locMap.get(loc)){
 				Xing xing = findXing(xingMap.keySet(),lot);
-				Road entrance = new Road(xing,loc);
-				Road exit = new Road(loc,xing);
+				Parking entrance = new Parking(xing, loc, loc);
+				Parking exit = new Parking(loc, xing, loc);
 				graph.addEdge(entrance.getSource(),entrance.getTarget(),entrance);
 				graph.addEdge(exit.getSource(),exit.getTarget(),exit);
 			}
@@ -208,70 +211,6 @@ public class GraphFinder {
 		}
 
 		return roadSet;
-	}
-
-	/**
-	 * 
-	 * Returns all edges in city given a map of xings to their paved neighbors.
-	 * Deprecated - use findRoadsWithXings instead.
-	 * @param city
-	 * @param xings
-	 * @return
-	 */
-	@Deprecated
-	public static Set<Road> findRoads(City city, Map<Lot, Set<Lot>> xings) {
-		Set<Road> edges = new HashSet<>();
-		for (Lot sourceLot : xings.keySet()) {
-
-			Xing sourceXing = new Xing(sourceLot);
-			// filter for special case where xing is actually just a single,
-			// solitary edge
-			Set<Lot> pavedNeighbors = xings.get(sourceLot);
-
-			if (pavedNeighbors.size() == 0) {
-				// create single loop edge
-				edges.add(new Road(sourceXing, sourceXing));
-
-				// inefficiency might be here b/c we look at every edge about
-				// twice, once for each direction
-			} else { // deal with normal case, where sourceLot has multiple
-						// neighbors
-				for (Lot pn : pavedNeighbors) {
-					Xing targetXing = null;
-					Lot currentLot = pn;
-					Lot lastLot = sourceLot;
-					List<Lot> segments = new ArrayList<>();
-					while (targetXing == null) {
-						if (xings.keySet().contains(currentLot)) { // if you've
-																	// reached
-																	// another
-																	// xing...
-							targetXing = new Xing(currentLot);
-						} else {
-							// logically, currentLot must be paved and must have
-							// exactly one other paved neighbor besides the one
-							// we already processed (or the sourceXing itself)
-							segments.add(currentLot);
-							Lot temp = currentLot;
-							for (Lot n : city.getLotManager().getNeighbors(currentLot)) {
-								if (!n.equals(lastLot) && n.isPaved()) {
-									// lot we're looking for!
-									currentLot = n;
-									lastLot = temp;
-									break; // for loop shouldn't execute any
-											// more checks
-								}
-
-							}
-							// System.out.println();
-						}
-					}
-					edges.add(new Road(sourceXing, targetXing, segments));
-				}
-			}
-		}
-
-		return edges;
 	}
 
 	public static void extensiveXingReport(Map<Lot, Set<Lot>> xings) {

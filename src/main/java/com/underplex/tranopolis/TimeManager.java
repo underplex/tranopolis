@@ -35,7 +35,7 @@ public class TimeManager {
 	public void advanceSeconds(long seconds){
 		
 		this.current = this.current.plusSeconds(seconds);
-		LOGGER.info("Time advanced by " + seconds + " second(s), is now " + current);
+		// LOGGER.info("Time advanced by " + seconds + " second(s), is now " + current);
 	}
 	
 	public void advancePeriod(){
